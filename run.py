@@ -1,3 +1,3 @@
 #!/usr/bin/env python
-from projlog_app import app
+from projlog import app
 app.run(debug = True)
