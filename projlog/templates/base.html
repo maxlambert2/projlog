@@ -1,0 +1,19 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="description" content="Projlog"/>
+    	<meta name="keywords" content="project tracker, personal project, project log, project blog, goal tracker, side project, hobby, goal setting"/>
+    	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css"/>
+		<title> {% block title %} Projlog {% endblock title %} </title>
+		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	</head>
+	<body>
+	{% block content %} {% endblock content %}
+	<div id="footer">
+		{% block footer %}  &#169; 2013 Projlog
+		{% endblock footer%}
+	</div>
+	</body>
+</html>

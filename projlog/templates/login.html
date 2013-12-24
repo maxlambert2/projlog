@@ -1,0 +1,18 @@
+{% extends base.html %}
+
+{% block content %}
+
+  <div id="login">
+  {% from "_form_macro.html" import render_field %}
+  <form action="" method="post" name="login">
+  {{login_form.hidden_tag()}}
+  <dl>
+   {{ render_field(login_form.username) }}
+	{{ render_field(login_form.password) }}
+	{{ render_field(login_form.remember_me) }}
+  </dl>
+  <p><input type="submit" value="login">
+  </form>
+  </div>
+  
+{% endblock %}
