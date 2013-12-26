@@ -1,16 +1,14 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+import config
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object('config.local')
+app = Flask(__name__)
 db = SQLAlchemy(app)
-lm = LoginManager()
-lm.init_app(app)
-
-
-from projlog import views, models
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 if __name__ == '__main__':
     app.run()
