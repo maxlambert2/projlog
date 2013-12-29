@@ -17,7 +17,8 @@ class User(Base):
     pw_hash = Column(String(100))
     full_name = Column(String(50))
     location = Column(String(50))
-    picture_url = Column(String(100))
+    picture_id = Column(String(100))
+    is_private = Column(Boolean, default=False)
 
     def __init__(self, username, email,password):
         self.username = username
@@ -56,10 +57,19 @@ class Project(Base):
     id = Column(Integer, primary_key=True)
     date_created = Column(DateTime, default=datetime.datetime.now)
     created_by = Column(Integer, ForeignKey('user.id'))
-    project_name = Column(String(50))
-    project_goal = Column(Text())
-    text = Column(Text())
-    
+    project_name = Column(String(40))
+    project_goal = Column(String(100))
+    background_pic_id = Column(String(100))
+    thumbnail_id = Column(String(100))
+    comments = Column(Text())
+
+class FollowRequests(Base):
+    __tablename__ = 'follow_requests'
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime, default=datetime.datetime.now)
+    user_requesting = Column(Integer, ForeignKey('user.id'))
+    user_approving = Column(Integer, ForeignKey('user.id'))
+    approved = Column(Boolean, default=False)
 
 class LogEntry(Base):
     __tablename__ = 'log_entry'
@@ -81,7 +91,29 @@ class LogEntryComment(Base):
     id = Column(Integer, primary_key=True)
     date_created = Column(DateTime, default=datetime.datetime.now)
     log_entry = Column(Integer, ForeignKey('log_entry.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
     text = Column(Text())
+    
+class LogEntryLike(Base):
+    __tablename__ = 'log_entry_like'
+    id = Column(Integer, primary_key=True)
+    log_entry = Column(Integer, ForeignKey('log_entry.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
+    
+class UserFollow(Base):
+    __tablename__ = 'user_follow'
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime, default=datetime.datetime.now)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    follower = Column(Integer, ForeignKey('user.id'))
+    
+class ProjectFollow(Base):
+    __tablename__ = 'project_follow'
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime, default=datetime.datetime.now)
+    project_id = Column(Integer, ForeignKey('project.id'))
+    follower = Column(Integer, ForeignKey('user.id'))
+    
     
        
     

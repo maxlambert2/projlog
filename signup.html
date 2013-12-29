@@ -1,0 +1,19 @@
+{% extends base.html %}
+
+{% block content %}
+
+  <div id="signup">
+  New to Projlog? <b>Signup</b>
+  </div>
+    <form action="/signup/" method="post" name="signup">
+  {{signup_form.hidden_tag()}}
+  <dl>
+   {{ render_field(signup_form.username) }}
+   {{ render_field(signup_form.email) }}
+	{{ render_field(signup_form.password) }}
+	{{ render_field(signup_form.confirm) }}
+  </dl>
+  <p><input type="submit" value="Signup">
+  </form>
+  
+{% endblock %}

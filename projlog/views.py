@@ -1,19 +1,22 @@
-#from projlog import app
-from forms import SignupForm,LoginForm
+from projlog import app
+from forms import SignupForm, LoginForm, ProfileForm
 from flask import render_template, flash, redirect , Flask, url_for, request, g, session
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from werkzeug.utils import secure_filename
 from projlog.models import User
 from projlog.database import db_session
-from projlog import login_manager
 
 UPLOAD_FOLDER = '/path/to/the/uploads'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['jpg', 'jpeg'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 @app.route('/')
 @app.route('/index')
@@ -26,9 +29,10 @@ def index():
 def load_user(user_id):
     return db_session.query(User,int(user_id))  # @UndefinedVariable
 
-@app.route('/login', methods = ['POST'])
+
+@app.route('/login', methods = ['GET','POST'])
 def login():
-    if g.user is not None and g.user.is_active():
+    if current_user is not None and current_user.is_active():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -49,15 +53,30 @@ def signup():
         db_session.add(user)  # @UndefinedVariable
         db_session.commit()  # @UndefinedVariable
         flash('Creating account')
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form)
+        return redirect(url_for('update_profile'))
+    return render_template('signup.html', form=form)
 
+
+@app.route('/update_profile', methods=['GET', 'POST'])
+@login_required
+def update_profile():
+    form = ProfileForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        current_user.location = form.location
+        current_user.full_name = form.full_name
+        db_session.commit()  # @UndefinedVariable
+        return url_for("index")
+    return render_template('update_profile.html', form=form)
+    
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
+    flash('You have logged out')
     return redirect(url_for("index"))
+
+
 
 
 # 

@@ -15,16 +15,15 @@ class LoginForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
-        user=None
         self.username.errors = None
         if self.username.find('@') != -1:  #email given
-            user = User.query.filter_by(email=self.username.data).first()
+            user = User.query.filter_by(email=self.username.data).first()  # @UndefinedVariable
             if user is None:
                 self.username.errors.append('Invalid Username/Password')
                 return False
             
         else:
-            user = User.query.filter_by(username=self.username.data).first()
+            user = User.query.filter_by(username=self.username.data).first()  # @UndefinedVariable
             if user is None:
                 self.username.errors.append('Invalid Username/Password')
                 return False
@@ -53,8 +52,16 @@ class LogEntryForm(Form):
     picture = FileField(u'Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
 
 class ProfileForm(Form):
-    first_name = TextField('First Name', validators = [Length(min=2, max=30)])
-    last_name = TextField('First Name', validators = [Length(min=2, max=30)])
+    full_name = TextField('Full Name', validators = [Length(min=2, max=30)])
     profile_pic = FileField(u'Profile Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
-    company = TextField('Company', validators = [Length(min=2, max=40)])
     location = TextField('Location', validators = [Length(min=2, max=40)])
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
