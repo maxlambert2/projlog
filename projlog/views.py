@@ -1,4 +1,4 @@
-from projlog import app
+from projlog import app, login_manager
 from forms import SignupForm, LoginForm, ProfileForm
 from flask import render_template, flash, redirect , Flask, url_for, request, g, session
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
@@ -8,15 +8,6 @@ from werkzeug.utils import secure_filename
 from projlog.models import User
 from projlog.database import db_session
 
-UPLOAD_FOLDER = '/path/to/the/uploads'
-ALLOWED_EXTENSIONS = set(['jpg', 'jpeg'])
-
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
 
 @app.route('/')
 @app.route('/index')
@@ -35,7 +26,7 @@ def login():
     if current_user is not None and current_user.is_active():
         return redirect(url_for('index'))
     form = LoginForm()
-    if form.validate_on_submit():
+    if request.method == 'POST' and form.validate_on_submit():
         login_user(form.user, remember=form.remember_me.data)
         return redirect(request.args.get("next") or url_for("index"))
     error = form.user.username.error

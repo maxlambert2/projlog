@@ -1,11 +1,11 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block content %}
 
   <div id="signup">
   New to Projlog? <b>Signup</b>
   </div>
-    <form action="/signup/" method="post" name="signup">
+    <form action="/signup" method="post" name="signup">
   {{signup_form.hidden_tag()}}
   <dl>
    {{ render_field(signup_form.username) }}

@@ -1,10 +1,36 @@
-<html>
-  <head>
-    <title>Projlog</title>
-  </head>
-  <body>
+{% extends "base.html" %}
+
+{% block content %}
+  <div id="header">
+  <div id="logo"> <img={{logo_url}} /></div>
+  <div id="left_column">
+  Working on a project? Projlog it.
+  </div>
+  <div id="right_column">
+  <div id="login">login 
+  {% from "_form_macro.html" import render_field %}
+  <form action="/login/" method="post" name="login">
+  {{login_form.hidden_tag}}
+  <dl>
+   {{ render_field(login_form.username) }}
+	{{ render_field(login_form.password) }}
+	{{ render_field(login_form.remember_me) }}
+  </dl>
+  <p><input type="submit" value="Login">
+  </form>
+  </div>
+  <div id="signup">
+  New to Projlog? <b>Signup</b>
+  </div>
+    <form action="/signup/" method="post" name="signup">
+  {{signup_form.hidden_tag}}
+  <dl>
+   {{ render_field(signup_form.username) }}
+   {{ render_field(signup_form.email) }}
+	{{ render_field(signup_form.password) }}
+	{{ render_field(signup_form.confirm) }}
+  </dl>
+  <p><input type="submit" value="Signup">
+  </form>
   
-  
-  
-  </body>
-</html>
+{% endblock content %}

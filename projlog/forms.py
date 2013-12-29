@@ -3,8 +3,8 @@ from wtforms.validators import Required, Length
 from models import User
 
 class LoginForm(Form):
-    username = TextField('Username or Email', validators = [Required()])
-    password =  password = PasswordField('Password', validators.Required())
+    username = TextField('Username or Email', [validators.Required()])
+    password =  password = PasswordField('Password', [validators.Required()])
     remember_me = BooleanField('remember_me', default = False)
     
     def __init__(self, *args, **kwargs):
