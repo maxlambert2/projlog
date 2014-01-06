@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Text, DateT
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from database import Base
+import md5
 #import string
 #import random
 
@@ -15,10 +16,10 @@ class User(Base):
     email = Column(String(60), unique=True)
     active = Column(Boolean, default=True)
     pw_hash = Column(String(100))
-    full_name = Column(String(50))
-    location = Column(String(50))
-    picture_id = Column(String(100))
-    is_private = Column(Boolean, default=False)
+    first_name = Column(String(30))
+    last_name = Column(String(30))
+    location = Column(String(30))
+    profile_pic_id = Column(String(100))
 
     def __init__(self, username, email,password):
         self.username = username
@@ -34,8 +35,10 @@ class User(Base):
     def set_location(self,location):
         self.location = location
         
-    def set_picture(self,pic_url):
-        self.picture_url=pic_url
+    def set_picture_id(self):
+        pic_id = md5.new(self.email).digest()
+        self.profile_pic_id=pic_id
+        return pic_id
         
     def deactivate(self):
         self.active = False
@@ -52,16 +55,19 @@ class User(Base):
     def __repr__(self):
         return '<User %r>' % (self.username)
     
+    
 class Project(Base):
     __tablename__ = 'project'
     id = Column(Integer, primary_key=True)
     date_created = Column(DateTime, default=datetime.datetime.now)
     created_by = Column(Integer, ForeignKey('user.id'))
+    is_private = Column(Boolean, default=False)
     project_name = Column(String(40))
     project_goal = Column(String(100))
     background_pic_id = Column(String(100))
     thumbnail_id = Column(String(100))
     comments = Column(Text())
+    
 
 class FollowRequests(Base):
     __tablename__ = 'follow_requests'
@@ -77,7 +83,7 @@ class LogEntry(Base):
     date_created = Column(DateTime, default=datetime.datetime.now)
     project = Column(Integer, ForeignKey('project.id'))
     text = Column(Text())
-    picture_url = Column(String(100))
+    entry_pic_id = Column(String(100))
     
 class ProjectComment(Base):
     __tablename__ = 'project_comment'

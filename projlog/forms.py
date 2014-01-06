@@ -1,6 +1,7 @@
-from wtforms import Form, TextField, TextAreaField, BooleanField, PasswordField, FileField, validators
+from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, validators
 from wtforms.validators import Required, Length
 from models import User
+from flask_wtf import Form
 
 class LoginForm(Form):
     username = TextField('Username or Email', [validators.Required()])
@@ -41,6 +42,24 @@ class SignupForm(Form):
     ])
     confirm = PasswordField('Confirm Password')
     
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        existing_username = User.query.filter_by(username=self.username.data).first()  # @UndefinedVariable
+        existing_email =  User.query.filter_by(email=self.email.data).first()  # @UndefinedVariable
+        if existing_username is not None:
+            self.username.errors.append( "Username already in use")
+            return False
+        if existing_email is not None:
+            self.email.errors.append( "Email already in use")
+            return False
+        return True
+            
+        
+        
+        
+    
 class ProjectCreateForm(Form):
     project_name = TextField('Project Name', validators = [Required(), Length(min=6, max=60)])
     project_goal = TextField('Project Goal')
@@ -52,7 +71,8 @@ class LogEntryForm(Form):
     picture = FileField(u'Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
 
 class ProfileForm(Form):
-    full_name = TextField('Full Name', validators = [Length(min=2, max=30)])
+    first_name = TextField('Full Name', validators = [Length(min=2, max=30)])
+    last_name = TextField('Full Name', validators = [Length(min=2, max=30)])
     profile_pic = FileField(u'Profile Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
     location = TextField('Location', validators = [Length(min=2, max=40)])
     

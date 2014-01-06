@@ -6,8 +6,9 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from werkzeug.utils import secure_filename
 from projlog.models import User
-from projlog.database import db_session
+from projlog import database
 
+db_session = database.Session()
 
 @app.route('/')
 @app.route('/index')
@@ -29,23 +30,20 @@ def login():
     if request.method == 'POST' and form.validate_on_submit():
         login_user(form.user, remember=form.remember_me.data)
         return redirect(request.args.get("next") or url_for("index"))
-    error = form.user.username.error
     return render_template('login.html', 
         title = 'Login',
-        form = form,
-        error_msg = error)
+        form = form)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = SignupForm()
-    if form.validate_on_submit():
+    if request.method == 'POST' and form.validate_on_submit():
         user = User(form.username.data, form.email.data,
-                    form.password.data)
-        db_session.add(user)  # @UndefinedVariable
-        db_session.commit()  # @UndefinedVariable
+                form.password.data)
         flash('Creating account')
+        db_session.add(user)
         return redirect(url_for('update_profile'))
-    return render_template('signup.html', form=form)
+    return render_template('signup.html', signup_form=form, email = form.email)
 
 
 @app.route('/update_profile', methods=['GET', 'POST'])
@@ -53,9 +51,14 @@ def signup():
 def update_profile():
     form = ProfileForm()
     if request.method == 'POST' and form.validate_on_submit():
-        current_user.location = form.location
-        current_user.full_name = form.full_name
-        db_session.commit()  # @UndefinedVariable
+        user = load_user(current_user.id)
+        user.location = form.location
+        user.first_name = form.first_name
+        user.last_name = form.last_name
+        try:
+            db_session.commit()  # @UndefinedVariable
+        except:
+            db_session.rollback()
         return url_for("index")
     return render_template('update_profile.html', form=form)
     

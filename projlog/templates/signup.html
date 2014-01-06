@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <div id="signup">
+  <legend>Signup</legend>
+  </div>
+    {% from "_form_macro.html" import render_field %}
+    <form action="/signup" method="post" name="signup">
+  {{signup_form.hidden_tag()}}
+   {{ render_field(signup_form.username) }}
+   {{ render_field(signup_form.email) }}
+	{{ render_field(signup_form.password) }}
+	{{ render_field(signup_form.confirm) }}
+  <p><input type="submit" value="Signup">
+  </form>
+  
+{% endblock %}

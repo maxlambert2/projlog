@@ -2,35 +2,45 @@
 
 {% block content %}
   <div id="header">
-  <div id="logo"> <img={{logo_url}} /></div>
-  <div id="left_column">
+  <div id="logo"> <img src="{{config.LOGO_URL}}" /></div>
+  <div id="leftcolumn">
   Working on a project? Projlog it.
   </div>
-  <div id="right_column">
-  <div id="login">login 
+  <div id="rightcolumn">
+
   {% from "_form_macro.html" import render_field %}
-  <form action="/login/" method="post" name="login">
-  {{login_form.hidden_tag}}
-  <dl>
+  <form id="login" action="/login" method="post" name="login" >
+  {{login_form.hidden_tag()}}
+<fieldset id="login">
+	<div class="error_msg">
+		{{ error_msg }}
+	</div>
+  <legend> Login </legend>
+  <ul>
    {{ render_field(login_form.username) }}
 	{{ render_field(login_form.password) }}
 	{{ render_field(login_form.remember_me) }}
-  </dl>
-  <p><input type="submit" value="Login">
+	</ul>
+  <input type="submit" value="Login">
   </form>
+  </fieldset>
   </div>
-  <div id="signup">
-  New to Projlog? <b>Signup</b>
-  </div>
-    <form action="/signup/" method="post" name="signup">
-  {{signup_form.hidden_tag}}
-  <dl>
+  
+
+  <legend> New to Projlog? <b>Signup</b> </legend>
+    <form id="signup" action="/signup" method="post" name="signup">
+  {{signup_form.hidden_tag()}}
+     <fieldset id="signup">
+	<div class="error_msg">
+		{{ error_msg }}
+	</div>
    {{ render_field(signup_form.username) }}
    {{ render_field(signup_form.email) }}
 	{{ render_field(signup_form.password) }}
 	{{ render_field(signup_form.confirm) }}
-  </dl>
-  <p><input type="submit" value="Signup">
+  <input type="submit" value="Signup">
+
   </form>
-  
+    </fieldset>
+    </div>
 {% endblock content %}
