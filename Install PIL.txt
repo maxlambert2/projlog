@@ -1,0 +1,27 @@
+This is something I wrote for the folks at work. It's a full workup for getting a clean OSX Lion working virtualenv using django + git + some other stuff:
+
+https://gist.github.com/1781374
+
+The most important lines for you are:
+
+Install libjpeg (PIL req)
+
+curl -O http://www.ijg.org/files/jpegsrc.v8c.tar.gz
+tar -xvzf jpegsrc.v8c.tar.gz
+cd jpeg-8c
+./configure
+make
+sudo make install
+cd ../
+Install freetype (more PIL requirements)
+
+curl -O http://ftp.igh.cnrs.fr/pub/nongnu/freetype/freetype-2.4.5.tar.gz
+tar -xvzf freetype-2.4.5.tar.gz
+cd freetype-2.4.5
+./configure
+make
+sudo make install
+cd ../
+Install PIL (usually in the requirements.txt so I don't have it in the above linked instruction)
+
+sudo pip install --no-index -f http://dist.plone.org/thirdparty/ -U PIL

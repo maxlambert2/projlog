@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+  {% from "_form_macro.html" import render_field %}
+{% block content %}
+
+<h1>My Projects</h1>
+{% for project in projects %}
+<div id="proj_{{loop.index}}">
+<a href="{{root_url}}/project/{{project.id}}">{{project.name}}</a>
+</div>
+
+
+{% endfor %}
+
+
+
+{% endblock content %}
