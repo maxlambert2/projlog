@@ -33,12 +33,12 @@ a{
 cursor: pointer;  
 text-decoration:none;  
 border-style:none;
-color: #2E55C8;
+color: #005CE6;
 } 
 
 body { 
 	background:#fff none repeat scroll 0%; 
-	font: 16px  "Myriad Pro", helvetica, verdana,arial,sans-serif;
+	font: 14px  "Myriad Pro", helvetica, verdana,arial,sans-serif;
 	font-style:normal;
 	color:black;
 	margin:0px;
@@ -105,6 +105,7 @@ font-size: 14px;
 width:150px;
 float:left;
 height:100%;
+padding:10px;
 }
 
 #centercolumn {
@@ -118,8 +119,6 @@ height: 100%;
 
 float:right;
 }
-
-
 
 #logo{
 	float:left;
@@ -152,6 +151,11 @@ div#login_box {
 	height: 600px;
 }
 
+#preview_img {
+	width:300px;
+	height: 300px;
+}
+
 a:hover {
 	text-decoration:underline;
 }
@@ -164,10 +168,9 @@ img{
 	border:none;
 }
 
-input,textarea {
+input,textarea  {
 	background:#ffffff;
 	padding:5px 2px;
-	font: 12px  ;
 	color:black;
 	text-align:left;
 	border: none;
@@ -183,7 +186,7 @@ input,textarea {
 form label {
 	margin-top: 0.5em;
 	float: left;
-	font-size: 13px;
+	font-size: 14px;
 	text-align:right;
 	font-weight: bold;
 	height:100%;
@@ -200,32 +203,49 @@ label.remember {
 	width: 300px;
 }
 
-.button  {
+.button {
 	color:#ffffff;
-	background-color: #1B4EAB;
+	background-color: #0029A6;
 	text-decoration:none;
+	font-family: Helvetica;
+	font-weight:normal;
+	font-size: 14px;
 	color:white;
 	border:none;
 	padding:0.7em 1em;
 	margin:5px 15px;
-	font-size: 13px;
+	clear:none;
+	display: inline-block; 
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-khtml-border-radius: 4px;
+}
+
+a.button:focus{
+	border-width: 3px;
 }
 
 
 
 form {
-	background-color:#EDF0FA;
-	-moz-border-radius: 12px;
-	-webkit-border-radius: 12px;
-	border-radius: 12px;
 	padding: 10px;
 	margin:10px;
-	border-style: solid;
-	border-color: #3645B5;
+	border-style: none;
+	/*border-color: #3645B5;
+	background-color:#EDF0FA;
 	border-width: 1px;
 	/*float:left; */
 	margin: 0;
 	width: 50%;
+	font-size: 16px;
+}
+
+
+form.front_page {
+	background-color:#EDF0FA;
+	-moz-border-radius: 12px;
+	-webkit-border-radius: 12px;
+	border-radius: 12px;
 }
 
 form {
@@ -277,6 +297,7 @@ legend{
 	text-align: center;
 }
 
+
 form ul li {
 	border-style: none;
 	-moz-border-radius: 6px;
@@ -289,7 +310,7 @@ form ul li {
 	vertical-align:center;
 	width: 100%;
 	clear:both;
-	font-size: 12px;
+	font-size: 16px;
 	/*background-color: red;*/
 }
 
@@ -322,7 +343,7 @@ fieldset .save_cancel_box {
 
 
 input#signup_button {
-	font-size:20px;
+	font-size:18px;
 	margin-top:20px;
 	padding:10px 15px;
 	background-color:#4CB083;
@@ -358,12 +379,6 @@ input[type="checkbox"] {
 	margin-top: 10px;
 }
 
-input.button {
-	clear:none;
-	margin-left: auto;
-	margin-right: auto;
-	display: inline-block; 
-}
 
 input.file-browser , .filename{
 	float:left;
@@ -396,8 +411,17 @@ div#toolbar {
 
 }
 
+ul.leftbar {
+	padding: 5px;
+}
+
+ul.leftbar li {
+	padding-bottom:0.6em;
+}
+
 .blue_background {
-	background:#CCE0FF;
+	background:#
+	CCE0FF;
 }
 
 .filename {

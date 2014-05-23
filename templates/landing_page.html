@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+  {% from "_form_macro.html" import render_field %}
+{% block content %}
+
+
+<div id="main" class="landing_page">
+  <div id="leftcolumn" >
+    <div id="projlog_purpose">
+
+    <p> Wasting too much time online and not spending enough time following your aspirations? Start a project and projlog it. <span style="color:white;"> Mood follows action. </span></p>
+
+</div>
+</div>
+
+  <div id="rightcolumn">
+
+
+  <form action="/login" method="post" name="login" class="login">
+  {{login_form.hidden_tag()}}
+<fieldset>
+    <legend > Log In </legend>
+    
+  <ul>
+   {{ render_field(login_form.email) }}
+  {{ render_field(login_form.password) }}
+  {{ render_field(login_form.remember_me) }}
+  </ul>
+  <input type="submit" value="Log In" class="button frontpage" />
+    </fieldset>
+  </form>
+
+{% include 'signup_form.html' %}
+
+  </div>
+</div>
+
+
+
+{% endblock content %}

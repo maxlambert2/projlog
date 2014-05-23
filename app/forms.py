@@ -1,5 +1,5 @@
-from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField, validators, ValidationError
-from wtforms.validators import Required, Length
+from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField,  ValidationError
+from wtforms.validators import Required, Length, regexp
 from models import User
 from flask_wtf import Form
 import config
@@ -7,8 +7,8 @@ import config
 
 
 class LoginForm(Form):
-    email = TextField('Email', [validators.Required()])
-    password = PasswordField('Password', [validators.Required()])
+    email = TextField('Email', [Required()])
+    password = PasswordField('Password', [Required()])
     remember_me = BooleanField('Remember Me', default = False)
     
     def __init__(self, *args, **kwargs):
@@ -29,10 +29,10 @@ class LoginForm(Form):
     
     
 class SignupForm(Form):
-    username = TextField('username', [validators.Length(min=2, max=30)])
-    email = TextField('Email', [validators.Length(min=6, max=40)])
+    username = TextField('username', [Length(min=2, max=30)])
+    email = TextField('Email', [Length(min=6, max=40)])
     password = PasswordField('Password', [
-        validators.Required()
+        Required()
     ])
     
     def validate(self):
@@ -52,13 +52,13 @@ class SignupForm(Form):
          
     
 class ProjectCreateForm(Form):
-    project_name = TextField('Project Name*', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
-    goal = TextField('Goal*', validators = [Required(), Length(min=6, max=150)])
-    privacy = SelectField('Privacy Setting*', 
+    project_name = TextField('Project Name', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
+    goal = TextField('Goal', validators = [Required(), Length(min=6, max=150)])
+    privacy = SelectField('Privacy Setting', validators = [Required()], 
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only'),
-                                           ('2', 'Private (Project Members & Advisors Only)')],
-                                  validators = Required())
+                                           ('2', 'Private (Project Members & Advisors Only)')]
+                                  )
     comments = TextField('Comments')
     
 class ProjectEditForm(Form):
@@ -69,18 +69,18 @@ class ProjectEditForm(Form):
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only')], 
                                   validators = Required())
-    picture = FileField(u'Project Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
+    picture = FileField(u'Project Picture', [regexp(u'^.*\.(jpg|JPG)$')])
     
     
 class LogEntryForm(Form):
     comments = TextAreaField('Comments',validators = [Required()])
-    picture = FileField(u'Picture', [validators.regexp(u'^.*\.(jpg|JPG)$')])
+    picture = FileField(u'Picture', [regexp(u'^.*\.(jpg|JPG)$')])
 
 class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])
     first_name = TextField('First Name', validators = [Length(max=40)])
     last_name = TextField('Last Name', validators = [Length(max=40)])
-    #profile_pic = FileField(u'Profile Picture', [validators.regexp(u'^.*\.(jpg|JPG|png|PNG)$')])
+    #profile_pic = FileField(u'Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG)$')])
     location = TextField('Location', validators = [Length(max=40)])
 
     def __init__(self, *args, **kwargs):

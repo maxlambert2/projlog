@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<div id="main" >
+  <div id="leftcolumn" >
+  	<a href="/create_project" id="create_project">Create Project</a>
+  	<div id="my_project_section">
+  		<ul>
+  			<li>
+  				<a  href="  "> Friends </a>
+
+  			</li>
+  			<li> 
+  				<a href="/create_project" > Create Project  </a>
+  			</li>
+  			<li>
+  				My Projects
+  			</li>
+  			{% for project in projects %}
+  			<li>
+
+  			</li>
+  			{% endfor %}
+
+  			<li>
+
+
+  	</div>
+
+  </div>
+  <div id="centercolumn">
+
+
+  </div>
+  <div id="rightcolumn">
+
+  </div>
+ </div>
+
+
+{% endblock %}

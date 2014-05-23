@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div id="background_pic">
+	<img  src="{{project.get_background_pic_url()}}" />
+	<div id="project_page_name">Project {{project.name}} </div>
+	{% if {{project.created_by.id == logged_user.id }} %}
+	<a href="{{request.base_url}}?edit=back_pic" id="update_prof_pic">Update Background Picture </a>
+	{% endif %}
+</div>
+
+<div class="user_list">
+	<div class="section_title"> Team Members </div>
+{% for user in project_members}
+<img id="profile_pic" src="{{user.get_profile_pic_url()}}" />
+<div id="user_profile_name">{{user.get_full_name()}}</div>
+{% endfor %}
+
+</div>
+
+<div class="posts">
+{% for post in posts %}
+<div class="post">
+	<div class="user_thumbnail">
+		<img class="thumbnail" src="{{post.created_by.get_thumbail_url()}}" />
+		<a class="user_name" href="user.get_profile_url()">{{user.get_full_name()}}</a>
+	</div>
+	<div class="post_text">
+		<div class="date">{{post.get_created_date_text()}}</div>
+		{{post.text}}
+	</div>
+</div>
+{% endfor %}
+</div>
+
+
+
+{% endblock content %}

@@ -2,15 +2,26 @@
 
 {% block content %}
 
-<h1>{{user.first_name}} {{user.last_name}}</h1>
+
+
+<img id="background_pic" src="{{user.get_background_pic_url}}" />
+
+
+<div class="profile_summary">
+<img id="profile_pic" src="{{user.get_background_pic_url}}" />
+
+
+<div id="user_profile_name">{{user.get_full_name()}}</div>
+
 <div class="user_location">{{user.location}}</div>
+
+
+</div>
 
 {% for project in projects %}
 <div id="proj_{{loop.index}}">
 <a href="{{root_url}}/project/{{project.id}}/">{{project.name}}</a>
 </div>
-
-
 {% endfor %}
 
 

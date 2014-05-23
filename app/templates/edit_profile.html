@@ -29,7 +29,7 @@ function s3_upload(){
         onFinishS3Put: function(url) {
             $('#status').html('Upload completed');
             $("#file_upload_url").val(url);
-            $("#preview_profile_pic").html('<img src="'+url+'" style="width:300px;" />');
+            $("#preview_profile_pic").html('<img id="preview_img" src="'+url+'"/>');
         },
         onError: function(status) {
           console.log()
@@ -60,7 +60,7 @@ function s3_upload(){
 <input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
 <input type="hidden" id="file_name" value="{{file_name}}" />
   <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/>
-  <div id="preview_profile_pic"><img src="{{profile_pic_url}}" style="width:300px" /></div>
+  <div id="preview_profile_pic"><img id="preview_img" src="{{profile_pic_url}}" /></div>
   <p id="status" class="filename"></p>
     </li>
 

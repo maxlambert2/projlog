@@ -3,8 +3,12 @@ import cStringIO
 import config
 import uuid
 
-def get_s3_url(object_name):
-    return 'https://s3.amazonaws.com/%s/%s' % (config.AWS_S3_BUCKET, object_name)
+def get_s3_url(object_name, folder=None):
+    if folder is None or folder == '':
+        return 'https://s3.amazonaws.com/%s/%s' % (config.AWS_S3_BUCKET, object_name)
+    else:
+        return 'https://s3.amazonaws.com/%s/%s/%s' % (config.AWS_S3_BUCKET, folder, object_name)
+        
 
 def allowed_file(filename):
     return '.' in filename and \

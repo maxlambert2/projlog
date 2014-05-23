@@ -6,8 +6,28 @@ from  app import db
 import md5
 from file_lib import get_s3_url
 import config
+import unicodedata
+import re
+from random import randrange
+
+
 #import string
 #import random
+
+def base36encode(number):
+    if not isinstance(number, (int, long)):
+        raise TypeError('number must be an integer')
+    if number < 0:
+        raise ValueError('number must be positive')
+
+    alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+    base36 = ''
+    while number:
+        number, i = divmod(number, 36)
+        base36 = alphabet[i] + base36
+
+    return base36 or alphabet[0]
 
 metadata = MetaData()
 
@@ -35,8 +55,8 @@ class User(db.Model):
     first_name = Column(String(30))
     last_name = Column(String(30))
     location = Column(String(30))
-    profile_pic_url = Column(String(80))
-    thumbail_url = Column(String(80))
+    profile_pic_id = Column(String(60))
+    thumbnail_id = Column(String(60))
     follows = relationship('User', 
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
@@ -61,9 +81,15 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % (self.username)
     
+    def get_profile_url(self):
+        return config.ROOT_URL + '/user/' + self.username
+    
     def get_profile_pic_url(self):
-        file_name = self.profile_pic_id
-        return get_s3_url(file_name)
+        if self.profile_pic_id is None:
+            return None
+        else:
+            file_name = self.profile_pic_id
+            return get_s3_url(file_name)
     
     def get_thumbnail_url(self):
         file_name = self.thumbnail_id
@@ -152,10 +178,11 @@ class User(db.Model):
             return False
         return True
 
-    
+
 class Project(db.Model):
     __tablename__ = 'project'
     id = Column(Integer, primary_key=True)
+    id_str = Column(String(10))
     created_date = Column(DateTime, default=datetime.datetime.now)
     privacy_mode = Column(SmallInteger, default=0)
     created_by = Column(Integer, ForeignKey('user.id'))
@@ -163,10 +190,10 @@ class Project(db.Model):
     goal = Column(String(200))
     slug = Column(String(25))
     comments=Column(Text)
-    background_pic_id = Column(String(100))
+    pic_id = Column(String(100))
     thumbnail_id = Column(String(100))
     description = Column(Text)
-    posts = relationship('Post')
+    posts = relationship('Post', backref = 'author', lazy = 'dynamic')
     members = relationship('ProjectMember')
     
     def __init__(self, name, goal, lead_id, privacy):
@@ -174,7 +201,37 @@ class Project(db.Model):
         self.goal=goal
         self.lead_id = lead_id
         self.privacy
-        self.slug = self.slugify
+    
+    def get_id_str(self):
+        if self.id_str is None:
+            self.id_str = base36encode(500000+ self.id *3 + randrange(1,3))
+        return self.id_str
+    
+    def get_slug(self):
+        if self.slug is None:
+            name_sub = self.name[:config.SLUG_LENGTH]
+            slug = unicodedata.normalize('NFKD', name_sub)
+            slug = slug.encode('ascii', 'ignore').lower()
+            slug = re.sub(r'[a-z0-9]+', '-', slug).strip('-')
+            slug = re.sub(r'[-]+', '-', slug)
+        return self.slug
+        
+    def get_url(self):
+        slug = self.get_slug()
+        id_str = self.get_id_str()
+        project_url = config.ROOT_URL+'/project/'+str(id_str)+'/'+slug+'/'
+        return project_url
+    
+    def get_pic_url(self):
+        if self.pic_id is None:
+            return None
+        else:
+            file_name = self.pic_id
+            return get_s3_url(file_name)
+    
+    def get_thumbnail_url(self):
+        file_name = self.thumbnail_id
+        return get_s3_url(file_name)
     
 class ProjectMember(db.Model):
     __tablename__ = 'project_member'
@@ -199,9 +256,16 @@ class Post(db.Model):
     created_by =  Column(Integer, ForeignKey('user.id'))
     project = Column(Integer, ForeignKey('project.id'))
     text = Column(Text())
-    entry_pic_id = Column(String(100))
+    pic_id = Column(String(100))
     comments = relationship('PostComment',  lazy='dynamic')
     likes = relationship('PostLike', lazy='dynamic')
+    
+    def get_pic_url(self):
+        if self.pic_id is None:
+            return None
+        else:
+            file_name = self.pic_id
+            return get_s3_url(file_name)
     
 class PostComment(db.Model):
     __tablename__ = 'post_comment'

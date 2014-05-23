@@ -1,37 +1,65 @@
 {% extends "base.html" %}
 
+{% from "_form_macro.html" import render_field %}
 
 {% block content %}
 
 <div id="main" >
   <div id="leftcolumn" >
+    <ul class="leftbar">
+      <li>
   	<a href="/create_project" id="create_project">Create Project</a>
-  	<div id="my_project_section">
-  		<ul>
+  		</li>
   			<li>
-  				<a  href="  "> Friends </a>
-
-  			</li>
-  			<li> 
-  				<a href="/create_project" > Create Project  </a>
+  				<a  href="/my_friends"> Friends </a>
   			</li>
   			<li>
   				My Projects
   			</li>
   			{% for project in projects %}
-  			<li>
-
-  			</li>
+  			   <li class="projects">
+            <a href="{{project.get_url()}}"> {{project.name}} </a>
+  			   </li>
   			{% endfor %}
 
-  			<li>
-
-
-  	</div>
-
+</ul>
   </div>
+
   <div id="centercolumn">
 
+    <div id="create_post">
+
+      {% if projects %}
+      <form action = "{{root_url}}/post" >
+      <input id="create_post " type="submit" value="New Post" class="button" /> for project
+        <select name="projects">
+            {% for project in projects %}
+            <option value="{{project.id}}">{{project.name}}</option>
+            {% endfor %}
+        </select>
+      </form>
+      {% else %}
+
+        You currently have no project. <a href="/create_project" class="button center"> Create Project  </a>
+
+      {% endif %}
+
+
+    </div>
+
+
+    {% for feed_post in feed_list %}
+    <div class="feed_item">
+      <div class="story_header">
+      <img class="thumbnail"  url="{{ feed_post.author.get_profile_pic_url() }}"/>
+      <div class="post_user"> {{feed_post.author.username}} </div>
+      <div class="post_text">  {{feed_post.txt}} </div>
+      {% if feed_post.pic_id %}
+      <div class="post_pic">  <img src="{{ feed_post.get_pic_url() }}" /> </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
 
   </div>
   <div id="rightcolumn">

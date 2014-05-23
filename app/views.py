@@ -1,6 +1,6 @@
 from app import app, db, login_manager
 import os
-from forms import SignupForm, LoginForm, ProfileForm, ProjectCreateForm
+from forms import *
 from flask import render_template, flash, redirect , Flask, url_for, request, g, session
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
@@ -15,9 +15,10 @@ import boto
 from PIL import Image
 
 
-
 @app.route('/sign_s3_upload/')
 def sign_s3():
+    
+    folder = config.S3_BUCKET_FOLDER
 
     object_name = request.args.get('s3_object_name')
     mime_type = request.args.get('s3_object_type')
@@ -25,12 +26,12 @@ def sign_s3():
     expires = int(time.time()+10)
     amz_headers = "x-amz-acl:public-read"
 
-    put_request = "PUT\n\n%s\n%d\n%s\n/%s/%s" % (mime_type, expires, amz_headers, config.AWS_S3_BUCKET, object_name)
+    put_request = "PUT\n\n%s\n%d\n%s\n/%s/%s/%s" % (mime_type, expires, amz_headers, config.AWS_S3_BUCKET, folder, object_name)
 
     signature = base64.encodestring(hmac.new(config.AWS_SECRET_ACCESS_KEY, put_request, sha1).digest())
     signature = urllib.quote_plus(signature.strip())
 
-    url = get_s3_url(object_name)
+    url = get_s3_url(object_name, folder)
 
     return json.dumps({
         'signed_request': '%s?AWSAccessKeyId=%s&Expires=%d&Signature=%s' % (url, config.AWS_ACCESS_KEY_ID, expires, signature),
@@ -112,41 +113,44 @@ def edit_profile(status=None):
     form = ProfileForm()
     previous_page = config.ROOT_URL
     form.old_username = user.username
-    profile_pic_url = user.profile_pic_url
+    profile_pic_url = user.get_profile_pic_url()
     if profile_pic_url is None:
         profile_pic_url = config.DEFAULT_PROFILE_PIC_URL
     
-    temp_file_name = user.username+'.jpg' #generate_filename(user.username)
-    
+    temp_file_name = user.username
+
     if request.method == 'POST' and form.validate_on_submit():
         user.username = form.username.data
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
         user.location = form.location.data
         picture_file = request.files['profile_pic']
+        filename = request.files['profile_pic'].filename
+        (file_id, file_extension) = os.path.splitext(filename)
         if picture_file:
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], temp_file_name)
+            
+            if user.profile_pic_id is None:
+                user.profile_pic_id = generate_filename(user.username, ext=file_extension)
+
+            if user.thumbnail_id is None:
+                user.thumbnail_id = generate_filename(user.username, ext=file_extension)
+            
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], user.profile_pic_id)
             picture_file.save(filepath)
             
-            if user.profile_pic_url is None:
-                profile_pic_filename = generate_filename(user.username)
-                user.profile_pic_url = get_s3_url(profile_pic_filename)
-    
-            if user.thumbnail_url is None:
-                thumbnail_filename = generate_filename(user.username)
-                user.thumbnail_url = get_s3_url(thumbnail_filename)
-                
-            profile_pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
-            thumbnail = resize_image(filepath, width=config.THUMBNAIL_SIZE)
+            profile_pic = resize_and_crop(filepath, config.PROFILE_PIC_SIZE)
+            thumbnail = resize_and_crop(filepath, config.THUMBNAIL_SIZE)
             
             conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
             bucket=conn.get_bucket(config.AWS_S3_BUCKET)
             
-            key_profile_pic = bucket.new_key(profile_pic_filename)
+            key_profile_pic = bucket.new_key(user.profile_pic_id)
             key_profile_pic.set_contents_from_file(profile_pic)  
+            key_profile_pic.set_acl('public-read')
             
-            key_thumbnail = bucket.new_key(thumbnail_filename)
+            key_thumbnail = bucket.new_key(user.thumbnail_id)
             key_thumbnail.set_contents_from_file(thumbnail) 
+            key_thumbnail.set_acl('public-read')
             
             bucket.delete_key(temp_file_name)
             os.remove(filepath)         
@@ -162,7 +166,7 @@ def edit_profile(status=None):
                            profile_pic_url=profile_pic_url, 
                            file_name=temp_file_name)
 
-@app.route('/<username>')
+@app.route('/user/<username>')
 @login_required
 def user_profile():
     projects = Project.query.filter_by(lead==current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
@@ -172,7 +176,7 @@ def user_profile():
 @login_required
 def edit_project(project_id):
     project = Project.query.filter_by(id=int(project_id))  # @UndefinedVariable
-    form = ProjectCreateForm()
+    form = ProjectEditForm()
     if request.method == 'POST' and form.validate_on_submit():
         project.name = form.project_name
         project.goal = form.project_goal

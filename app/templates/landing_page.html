@@ -23,7 +23,13 @@
   <ul>
    {{ render_field(login_form.email) }}
   {{ render_field(login_form.password) }}
-  {{ render_field(login_form.remember_me) }}
+ 
+ <li> 
+<label for="remember_me">Remember Me</label>
+ <input id="remember_me" name="remember_me" type="checkbox" value="y" checked />
+  
+  </li>
+
   </ul>
   <input type="submit" value="Log In" class="button frontpage" />
     </fieldset>
