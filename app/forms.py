@@ -57,9 +57,9 @@ class ProjectCreateForm(Form):
     privacy = SelectField('Privacy Setting', validators = [Required()], 
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only'),
-                                           ('2', 'Private (Project Members & Advisors Only)')]
+                                           ('2', 'Private (Select Friends Only)')]
                                   )
-    comments = TextField('Comments')
+    comments = TextAreaField('Comments')
     
 class ProjectEditForm(Form):
     name = TextField('Project Name', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])

@@ -168,7 +168,7 @@ img{
 	border:none;
 }
 
-input,textarea  {
+input,textarea, select  {
 	background:#ffffff;
 	padding:5px 2px;
 	color:black;
@@ -179,17 +179,22 @@ input,textarea  {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-khtml-border-radius: 4px;
-	margin-left: 10px;
 	clear:none;
+	border-style:solid;
+	border-width:1px;
+	border-color:#0066CC;
+	float:left;
 }
 
 form label {
-	margin-top: 0.5em;
+	margin-top: 0.4em;
+	margin-right: 1em;
 	float: left;
 	font-size: 14px;
 	text-align:right;
 	font-weight: bold;
 	height:100%;
+	vertical-align: center;
 }
 
 
@@ -231,11 +236,7 @@ form {
 	padding: 10px;
 	margin:10px;
 	border-style: none;
-	/*border-color: #3645B5;
-	background-color:#EDF0FA;
-	border-width: 1px;
-	/*float:left; */
-	margin: 0;
+	margin: auto;
 	width: 50%;
 	font-size: 16px;
 }
@@ -246,11 +247,6 @@ form.front_page {
 	-moz-border-radius: 12px;
 	-webkit-border-radius: 12px;
 	border-radius: 12px;
-}
-
-form {
-	width: 350px;
-	margin: 20px auto;
 }
 
 
@@ -303,7 +299,7 @@ form ul li {
 	-moz-border-radius: 6px;
 	-webkit-border-radius: 6px;
 	border-radius: 6px;
-	height: 2em;
+	height: 1.8em;
 	list-style: none;
 	list-style-type: none;
 	padding: 5px;
@@ -352,13 +348,7 @@ input#signup_button {
 	border-color:#0A4230;
 }
 
-input[type="text"], input[type="password"] {
-width: 150px;
-border-style:solid;
-border-width:1px;
-border-color:#0066CC;
-float:left;
-}
+
 
 
 input[type="radio"] {
@@ -447,6 +437,18 @@ a.button:hover{
 
 div.clearfloats {clear:both;}
 
+.submit_cancel_buttons {
+	width:150px;
+	padding:10px;
+	margin-top: 10px;
+	margin-left:180px;
+	height: 35px;
+}
+
+.submit_cancel_buttons input {
+	text-align: left;
+	display:block;
+}
 
 
 .tabbed_content {
@@ -476,8 +478,9 @@ div.clearfloats {clear:both;}
 
 a.cancel_button{
 	padding:0.7em;
-	display:inline;
-	margin: 0 30px;
+	margin-left: 10px;
+	text-align: right;
+	display: block;
 }
 
 
