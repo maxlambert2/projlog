@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 {% from "_form_macro.html" import render_field %}
 
-{% block javascript %}
-{% include "text_validation_js.html" %}
-{% endblock javascript %}
 
 {% block content %}
 
@@ -18,20 +15,17 @@
 	<ul>
     <li>
 <label for="project_name">Project Name</label>
- <input id="project_name" name="project_name" type="text" value="" tabindex="1" size="40"
-      class="validate[required,length[1,50]]"  />
+ <input id="project_name" name="project_name" type="text" value="" tabindex="1" size="40"  />
 </li>
 <li>
   <label for="project_goal">Project Goal</label>
- <input id="project_goal" name="project_goal" type="text" value="" tabindex="2" size="60"
-      class="validate[required,length[3,150],custom[noSpecialCharacters]]" />
+ <input id="project_goal" name="project_goal" type="text" value="" tabindex="2" size="60"/>
 </li>
 	{{ render_field(form.privacy) }}
 
 <li>
   <label for="comments">Comments</label>
- <input id="comments" name="comments" type="textarea" value="" tabindex="4" size="60" height=3
-      class="validate[length[0,500],custom[noSpecialCharacters]]" />
+ <input id="comments" name="comments" type="textarea" value="" tabindex="4" size="60" height=3 />
 </li>
 	</ul>
   <div class="submit_cancel_buttons">

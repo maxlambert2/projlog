@@ -119,7 +119,6 @@ def edit_profile(status=None):
         user.last_name = form.last_name.data
         user.location = form.location.data
         user.profile_pic_url = request.form['file_upload_url']
-        
 #         if pic and allowed_file(pic.filename):
 #                 filename = secure_filename(pic.filename)
 #                 profile_pic = resize_image(filename, width=config.PROFILE_PIC_WIDTH)
@@ -168,11 +167,11 @@ def create_project():
         db.session.add(project)  # @UndefinedVariable
         project_id = db.session.flush()  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-        return redirect(url_for('edit_project'), project_id=project_id)
+        return redirect(url_for('project_page'), project_id=project_id)
     
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
-@app.route('/project/<project_id>/')
+@app.route('/<project_id>/')
 def project_page(project_id):
     project = Project.query.filter_by(id=project_id)  # @UndefinedVariable
     return render_template('project_page.html', project=project, root_url=config.ROOT_URL)
