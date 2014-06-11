@@ -222,6 +222,10 @@ class Project(db.Model):
         project_url = config.ROOT_URL+'/project/'+str(id_str)+'/'+slug+'/'
         return project_url
     
+    def get_edit_url(self):
+        edit_url = self.get_url()
+        return project_url
+    
     def get_pic_url(self):
         if self.pic_id is None:
             return None
