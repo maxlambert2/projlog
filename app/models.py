@@ -193,19 +193,20 @@ class Project(db.Model):
     pic_id = Column(String(100))
     thumbnail_id = Column(String(100))
     description = Column(Text)
-    posts = relationship('Post', backref = 'author', lazy = 'dynamic')
+    posts = relationship('Post',  lazy = 'dynamic')
     members = relationship('ProjectMember')
     
-    def __init__(self, name, goal, lead_id, privacy):
+    def __init__(self, name, goal, created_by, privacy):
         self.name=name
         self.goal=goal
-        self.lead_id = lead_id
-        self.privacy
+        self.created_by = created_by
+        self.privacy_mode=privacy
+
     
     def get_id_str(self):
-        if self.id_str is None:
-            self.id_str = base36encode(500000+ self.id *3 + randrange(1,3))
-        return self.id_str
+        id_str = str(base36encode(500000+ self.id *3 + randrange(1,3)))
+        self.id_str=id_str
+        return id_str
     
     def get_slug(self):
         if self.slug is None:
@@ -214,17 +215,28 @@ class Project(db.Model):
             slug = slug.encode('ascii', 'ignore').lower()
             slug = re.sub(r'[a-z0-9]+', '-', slug).strip('-')
             slug = re.sub(r'[-]+', '-', slug)
+            self.slug=slug
         return self.slug
         
     def get_url(self):
-        slug = self.get_slug()
-        id_str = self.get_id_str()
-        project_url = config.ROOT_URL+'/project/'+str(id_str)+'/'+slug+'/'
+        if self.slug is None or self.id_str is None:
+            if self.slug is None:
+                self.get_slug()
+                if self.id_str is None:
+                    self.get_id_str()
+            try:
+                db.session.add(self)  # @UndefinedVariable
+                db.session.commit()  # @UndefinedVariable
+            except:
+                db.session.rollback()  # @UndefinedVariable
+                return False
+        path = '/project/'+str(self.id_str)+'/'+self.slug+'/'
+        project_url = config.ROOT_URL+path
         return project_url
     
     def get_edit_url(self):
-        edit_url = self.get_url()
-        return project_url
+        edit_url = self.get_url()+'edit'
+        return edit_url
     
     def get_pic_url(self):
         if self.pic_id is None:

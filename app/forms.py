@@ -1,6 +1,6 @@
 from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField,  ValidationError
 from wtforms.validators import Required, Length, regexp
-from models import User
+from models import User, Project
 from flask_wtf import Form
 import config
 
@@ -60,6 +60,22 @@ class ProjectCreateForm(Form):
                                            ('2', 'Private (Select Friends Only)')]
                                   )
     comments = TextAreaField('Comments')
+    
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+    
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        if hasattr(self,'user') and self.user is not None:
+            user_id=self.user.id
+            proj_name_exists = Project.query.filter_by(created_by=user_id,name=self.project_name.data).first()# @UndefinedVariable
+            if proj_name_exists is not None:
+                self.project_name.errors.append("Project Name already exists")
+                return False
+        return True
+                
     
 class ProjectEditForm(Form):
     name = TextField('Project Name', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])

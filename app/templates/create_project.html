@@ -6,26 +6,37 @@
 
 <div id="main" class="single_form_page" >
 
-    <form id="create_project" action="" method="post" name="create_project" >
+    <form id="create_project" action="/create_project" method="post" name="create_project" >
   {{form.hidden_tag()}}
      <fieldset id="signup">
 	<div class="error_msg">
 		{{ error_msg }}
 	</div>
 	<ul>
-    <li>
-<label for="project_name">Project Name</label>
- <input id="project_name" name="project_name" type="text" value="" tabindex="1" size="40"  />
-</li>
+{{render_field(form.project_name)}}
 <li>
-  <label for="project_goal">Project Goal</label>
- <input id="project_goal" name="project_goal" type="text" value="" tabindex="2" size="60"/>
+  <label for="goal">Project Goal</label>
+ <input id="goal" name="goal" type="text" value="" tabindex="2" size="60"/>
+   {% if form.goal.errors %}
+    <ul class='errors'>
+    {% for error in form.goal.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
 </li>
 	{{ render_field(form.privacy) }}
 
 <li>
   <label for="comments">Comments</label>
  <input id="comments" name="comments" type="textarea" value="" tabindex="4" size="60" height=3 />
+    {% if form.comments.errors %}
+    <ul class='errors'>
+    {% for error in form.comments.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
 </li>
 	</ul>
   <div class="submit_cancel_buttons">

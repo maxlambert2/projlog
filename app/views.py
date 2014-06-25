@@ -169,7 +169,7 @@ def edit_profile(status=None):
 @app.route('/user/<username>')
 @login_required
 def user_profile():
-    projects = Project.query.filter_by(lead==current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+    projects = Project.query.filter_by(created_by==current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
     return render_template('user_profile.html', user=current_user, projects=projects)
 
 @app.route('/<username>/<project_id>/edit')
@@ -179,30 +179,34 @@ def edit_project(project_id):
     form = ProjectEditForm()
     if request.method == 'POST' and form.validate_on_submit():
         project.name = form.project_name
-        project.goal = form.project_goal
-        project.privacy = form.project_privacy
+        project.goal = form.goal
+        project.privacy_mode = form.privacy
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
     return render_template('edit_project.html', project=project)
 
-@app.route('/create_project')
+@app.route('/create_project', methods=['GET', 'POST'])
 @login_required
 def create_project():
     form =ProjectCreateForm()
+    form.user=current_user
     previous_page = config.ROOT_URL
     if request.method == 'POST' and form.validate_on_submit():
-        project = Project(form.project_name, form.project_goal, form.project_privacy, form.created_by)
+        project = Project(name=form.project_name.data, 
+                          goal=form.goal.data, 
+                          privacy=form.privacy.data,
+                          created_by=current_user.id)
         db.session.add(project)  # @UndefinedVariable
-        project_id = db.session.flush()  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-        return redirect(url_for('edit_project'), project_id=project_id)
+        project.get_url()
+        return redirect(project.get_url())
     
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
-@app.route('/project/<project_id>/')
-def project_page(project_id):
-    project = Project.query.filter_by(id=project_id)  # @UndefinedVariable
-    return render_template('project_page.html', project=project, root_url=config.ROOT_URL)
+@app.route('/project/<project_id_str>/<slug>/')
+def project_page(project_id_str, slug):
+    project = Project.query.filter_by(id_str=project_id_str).first()  # @UndefinedVariable
+    return render_template('project_page.html', project=project,  root_url=config.ROOT_URL)
 
 
 @app.route('/follow/<username>')
