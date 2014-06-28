@@ -186,9 +186,9 @@ class Project(db.Model):
     created_date = Column(DateTime, default=datetime.datetime.now)
     privacy_mode = Column(SmallInteger, default=0)
     created_by = Column(Integer, ForeignKey('user.id'))
-    name = Column(String(50))
+    project_name = Column(String(50))
     goal = Column(String(200))
-    slug = Column(String(25))
+    slug = Column(String(30))
     comments=Column(Text)
     pic_id = Column(String(100))
     thumbnail_id = Column(String(100))
@@ -196,8 +196,8 @@ class Project(db.Model):
     posts = relationship('Post',  lazy = 'dynamic')
     members = relationship('ProjectMember')
     
-    def __init__(self, name, goal, created_by, privacy):
-        self.name=name
+    def __init__(self, project_name, goal, created_by, privacy):
+        self.project_name=project_name
         self.goal=goal
         self.created_by = created_by
         self.privacy_mode=privacy
@@ -210,7 +210,7 @@ class Project(db.Model):
     
     def get_slug(self):
         if self.slug is None:
-            name_sub = self.name[:config.SLUG_LENGTH]
+            name_sub = self.project_name[:config.SLUG_LENGTH]
             slug = unicodedata.normalize('NFKD', name_sub)
             slug = slug.encode('ascii', 'ignore').lower()
             slug = re.sub(r'[a-z0-9]+', '-', slug).strip('-')
@@ -222,14 +222,8 @@ class Project(db.Model):
         if self.slug is None or self.id_str is None:
             if self.slug is None:
                 self.get_slug()
-                if self.id_str is None:
+            if self.id_str is None:
                     self.get_id_str()
-            try:
-                db.session.add(self)  # @UndefinedVariable
-                db.session.commit()  # @UndefinedVariable
-            except:
-                db.session.rollback()  # @UndefinedVariable
-                return False
         path = '/project/'+str(self.id_str)+'/'+self.slug+'/'
         project_url = config.ROOT_URL+path
         return project_url

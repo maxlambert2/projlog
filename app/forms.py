@@ -70,7 +70,7 @@ class ProjectCreateForm(Form):
             return False
         if hasattr(self,'user') and self.user is not None:
             user_id=self.user.id
-            proj_name_exists = Project.query.filter_by(created_by=user_id,name=self.project_name.data).first()# @UndefinedVariable
+            proj_name_exists = Project.query.filter_by(created_by=user_id,project_name=self.project_name.data).first()# @UndefinedVariable
             if proj_name_exists is not None:
                 self.project_name.errors.append("Project Name already exists")
                 return False

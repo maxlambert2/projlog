@@ -108,7 +108,7 @@ def signup():
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
-def edit_profile(status=None):
+def edit_settings(status=None):
     user=current_user
     form = ProfileForm()
     previous_page = config.ROOT_URL
@@ -168,8 +168,9 @@ def edit_profile(status=None):
 
 @app.route('/user/<username>')
 @login_required
-def user_profile():
-    projects = Project.query.filter_by(created_by==current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+def user_profile(username):
+    user = User.query.filter_by(username=username).first()# @UndefinedVariable
+    projects = Project.query.filter_by(created_by=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
     return render_template('user_profile.html', user=current_user, projects=projects)
 
 @app.route('/<username>/<project_id>/edit')
@@ -192,13 +193,15 @@ def create_project():
     form.user=current_user
     previous_page = config.ROOT_URL
     if request.method == 'POST' and form.validate_on_submit():
-        project = Project(name=form.project_name.data, 
+        project = Project(project_name=form.project_name.data, 
                           goal=form.goal.data, 
                           privacy=form.privacy.data,
                           created_by=current_user.id)
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
         project.get_url()
+        db.session.add(project)  # @UndefinedVariable
+        db.session.commit() # @UndefinedVariable
         return redirect(project.get_url())
     
     return render_template('create_project.html', form=form, previous_page=previous_page)

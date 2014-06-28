@@ -18,8 +18,8 @@
  {% if current_user.username %} 
  <div id="toolbar">
  <a class="toolbar_link" href="{{config.ROOT_URL}}"> home </a>
-<a class="toolbar_link" href="{{config.ROOT_URL}}/{{current_user.username}}"> {{current_user.username}}</a>
-<a class="toolbar_link" href="{{config.ROOT_URL}}/edit_profile"> settings </a>
+<a class="toolbar_link" href="{{current_user.get_profile_url}}"> {{current_user.username}}</a>
+<a class="toolbar_link" href="{{config.ROOT_URL}}/settings"> settings </a>
 <a class="toolbar_link" href="{{config.ROOT_URL}}/logout"> logout </a>
 </div>
 {% endif %}
