@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+
+	{% block javascript %}  
+
+
+
+{% if request_sent %}
+<script type="text/javascript" >
+$(function(){
+	var button_id = '#addFriend'+ {{user.id}};
+$(button_id).html("Friend Request Sent");
+$(button_id).removeAttr("onclick");
+});
+
+</script>
+
+{% endif %}
+
+	 {% endblock javascript %}
+
+{% block content %}
+<div id="main" >
+  	<div id="leftcolumn" >
+  		{% block profile_about %}
+		<div class="profile_summary">
+			<img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
+			<div id="user_profile_name">{{user.get_full_name()}}</div>
+		</div>
+		{% endblock profile_about %}
+	</div>
+
+	<div id="centercolumn">
+
+		{% block profile_content %}
+
+	This user's profile is private.  
+		<a class="button add_friend" onclick="addFriend({{current_user.id}},{{user.id}});" id="addFriend{{user.id}}">Send Friend Request</a>
+
+		{% endblock %}
+
+</div>
+
+</div>
+
+{% endblock content %}

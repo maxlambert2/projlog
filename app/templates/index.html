@@ -1,50 +1,43 @@
 {% extends "base.html" %}
-  {% from "_form_macro.html" import render_field %}
+
+{% from "_form_macro.html" import render_field %}
+
 {% block content %}
 
-
-<div id="main" class="landing_page">
+<div id="main" >
   <div id="leftcolumn" >
-    <div id="projlog_purpose">
+    <ul class="leftbar">
+      <li>
+  	<a href="/create_project" id="create_project">Create Project</a>
+  		</li>
+  			<li>
+  				<a  href="/my_friends"> Friends </a>
+  			</li>
+  			<li>
+  				My Projects
+  			</li>
+  			{% for project in projects %}
+  			   <li class="project_list">
+            <a href="{{project.get_url()}}"> {{project.project_name}} </a>
+  			   </li>
+  			{% endfor %}
 
-    <p>Wasting too much time online and not spending enough time following your aspirations? <span style="color:white;"> Start a project and projlog it. </span></p>
+</ul>
+  </div>
 
-</div>
-</div>
+  <div id="centercolumn">
+
+  {% block center_column %}
+
+  {% endblock %}
+
+  </div>
+
 
   <div id="rightcolumn">
 
-
-  <form action="/login" method="post" name="login" class="login">
-  {{login_form.hidden_tag()}}
-<fieldset>
-    <legend > Log In </legend>
-    
-  <ul>
-   {{ render_field(login_form.email) }}
-  {{ render_field(login_form.password) }}
-  {{ render_field(login_form.remember_me) }}
-  </ul>
-  <input type="submit" value="Log In" class="button frontpage" />
-    </fieldset>
-  </form>
-
-    <form action="/signup" method="post" name="signup" class="signup">
-  {{signup_form.hidden_tag()}}
-     <fieldset>
-    <legend class="signup"> New to Projlog? Signup </legend>
-	<ul>
-   {{ render_field(signup_form.username) }}
-   {{ render_field(signup_form.email) }}
-  {{ render_field(signup_form.password) }}
-	</ul>
-  <input id="signup_button" type="submit" value="Sign Up" class="button" />
- </fieldset>
-  </form>
-
   </div>
-</div>
+ </div>
 
 
-
-{% endblock content %}
+{% endblock %}

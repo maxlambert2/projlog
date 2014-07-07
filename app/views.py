@@ -5,7 +5,7 @@ from flask import render_template, flash, redirect , Flask, url_for, request, g,
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from models import User, Project
+from models import User, Project, FriendRequest
 import config
 from file_lib import *
 import time, base64, urllib, json, hmac
@@ -60,8 +60,7 @@ def index():
     posts = current_user.posts_followed()
     user_projects = current_user.projects
     return render_template('news_feed.html', posts=posts, 
-                           projects=user_projects, 
-                           user=current_user)
+                           projects=user_projects)
 
 def landing_page():
     login_form = LoginForm()
@@ -108,7 +107,7 @@ def signup():
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
-def edit_settings(status=None):
+def edit_profile(status=None):
     user=current_user
     form = ProfileForm()
     previous_page = config.ROOT_URL
@@ -118,7 +117,6 @@ def edit_settings(status=None):
         profile_pic_url = config.DEFAULT_PROFILE_PIC_URL
     
     temp_file_name = user.username
-
     if request.method == 'POST' and form.validate_on_submit():
         user.username = form.username.data
         user.first_name = form.first_name.data
@@ -127,32 +125,11 @@ def edit_settings(status=None):
         picture_file = request.files['profile_pic']
         filename = request.files['profile_pic'].filename
         (file_id, file_extension) = os.path.splitext(filename)
-        if picture_file:
-            
-            if user.profile_pic_id is None:
-                user.profile_pic_id = generate_filename(user.username, ext=file_extension)
-
-            if user.thumbnail_id is None:
-                user.thumbnail_id = generate_filename(user.username, ext=file_extension)
-            
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], user.profile_pic_id)
+        if picture_file: 
+            pic_id = user.get_profile_pic_id(file_extension)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], pic_id) 
             picture_file.save(filepath)
-            
-            profile_pic = resize_and_crop(filepath, config.PROFILE_PIC_SIZE)
-            thumbnail = resize_and_crop(filepath, config.THUMBNAIL_SIZE)
-            
-            conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
-            bucket=conn.get_bucket(config.AWS_S3_BUCKET)
-            
-            key_profile_pic = bucket.new_key(user.profile_pic_id)
-            key_profile_pic.set_contents_from_file(profile_pic)  
-            key_profile_pic.set_acl('public-read')
-            
-            key_thumbnail = bucket.new_key(user.thumbnail_id)
-            key_thumbnail.set_contents_from_file(thumbnail) 
-            key_thumbnail.set_acl('public-read')
-            
-            bucket.delete_key(temp_file_name)
+            user.set_profile_pic(filepath)
             os.remove(filepath)         
         db.session.add(user)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
@@ -168,10 +145,53 @@ def edit_settings(status=None):
 
 @app.route('/user/<username>')
 @login_required
-def user_profile(username):
+def user_page(username):
     user = User.query.filter_by(username=username).first()# @UndefinedVariable
-    projects = Project.query.filter_by(created_by=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
-    return render_template('user_profile.html', user=current_user, projects=projects)
+    if user is not None:
+        if user.is_viewable_by(current_user.id):
+            projects = Project.query.filter_by(created_by=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+            return render_template('user_page.html', user=user, projects=projects)
+        else:
+            request_sent=False
+            fr_count = FriendRequest.query.filter_by(requester_user_id=current_user.id, requested_user_id=user.id).count()# @UndefinedVariable
+            if fr_count > 0:
+                request_sent=True
+            return render_template('user_page_private.html', user=user, request_sent=request_sent)
+    else:
+        return redirect(url_for('index'))
+    
+    
+@app.route('/add_friend', methods=['GET', 'POST'])
+def add_friend():  
+    form = FriendRequestForm()
+    if form.validate_on_submit():
+        if request.method =='POST':
+            requester=request.form['requester_id']
+            requested=request.form['requested_id']
+        else:
+            requester=request.args['requester_id']
+            requested=request.args['requested_id']
+        count = FriendRequest.query.filter_by(requester_user_id=requester, requested_user_id=requested).count()# @UndefinedVariable
+        if count == 0:
+            friend_request = FriendRequest(requester_user_id=requester, requested_user_id=requested)
+            try:
+                db.session.add(friend_request)# @UndefinedVariable
+                db.session.commit()# @UndefinedVariable
+            except:
+                return "Error"
+    else:
+        return  render_template('add_friend_form.html',form=form)
+    return "Success"
+
+    
+@app.route('/user/<username>/profile_pic/')
+@login_required
+def user_profile_pic_page(username):   
+    user = User.query.filter_by(username=username).first()# @UndefinedVariable
+    if user is not None:
+        return render_template('user_profile_pic.html', user=user)
+    else:
+        redirect(url_for('index'))
 
 @app.route('/<username>/<project_id>/edit')
 @login_required
@@ -213,7 +233,6 @@ def project_page(project_id_str, slug):
 
 
 @app.route('/follow/<username>')
-@login_required
 def follow(username):
     user = User.query.filter_by(username= username).first()  # @UndefinedVariable
     if user == None:
@@ -232,7 +251,6 @@ def follow(username):
     return redirect(url_for('user', username = username))
 
 @app.route('/unfollow/<username>')
-@login_required
 def unfollow(username):
     user = User.query.filter_by(User.username == username).first()  # @UndefinedVariable
     if user == None:

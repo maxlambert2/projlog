@@ -1,42 +1,30 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
 {% from "_form_macro.html" import render_field %}
 
-{% block content %}
-
-<div id="main" >
-  <div id="leftcolumn" >
-    <ul class="leftbar">
-      <li>
-  	<a href="/create_project" id="create_project">Create Project</a>
-  		</li>
-  			<li>
-  				<a  href="/my_friends"> Friends </a>
-  			</li>
-  			<li>
-  				My Projects
-  			</li>
-  			{% for project in projects %}
-  			   <li class="projects">
-            <a href="{{project.get_url()}}"> {{project.name}} </a>
-  			   </li>
-  			{% endfor %}
-
-</ul>
-  </div>
-
-  <div id="centercolumn">
+{% block center_column %}
 
     <div id="create_post">
 
       {% if projects %}
       <form action = "{{root_url}}/post" >
-      <input id="create_post " type="submit" value="New Post" class="button" /> for project
+        <table>
+          <tr>
+            <td>
+      <input id="create_post " type="submit" value="New Post" class="button" /> 
+    </td>
+    <td>  
+    for project: &nbsp;
+    </td>
+    <td>
         <select name="projects">
             {% for project in projects %}
-            <option value="{{project.id}}">{{project.name}}</option>
+            <option value="{{project.id}}">{{project.project_name}}</option>
             {% endfor %}
         </select>
+      </td>
+    </tr>
+  </table>
       </form>
       {% else %}
 
@@ -62,10 +50,6 @@
     {% endfor %}
 
   </div>
-  <div id="rightcolumn">
-
-  </div>
- </div>
 
 
 {% endblock %}

@@ -1,8 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf.csrf import CsrfProtect
+
 
 app = Flask(__name__)
+CsrfProtect(app)
 app.config.from_envvar('PROJLOG_SETTINGS')
 db = SQLAlchemy(app)
 

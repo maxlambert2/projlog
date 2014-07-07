@@ -5,24 +5,61 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="description" content="Projlog"/>
     	<meta name="keywords" content="project tracker, personal project, project log, project blog, goal tracker, side project, hobby, goal setting"/>
+    	<meta name="csrf-token" content="{{ csrf_token() }}">
     	<link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" type="text/css"/>
 		<title> {% block title %} Projlog {% endblock title %} </title>
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script type="text/javascript" >
+			var csrftoken = $('meta[name=csrf-token]').attr('content')
+			$(document).ajaxSend(function(event, jqxhr, settings) {
+        		if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            jqxhr.setRequestHeader("X-CSRFToken", csrftoken)
+        }
+    
+});
+</script>
+	<script type="text/javascript" src="{{ url_for('static', filename='base.js') }}" ></script>
 		{% block javascript %}   {% endblock javascript %}
 	</head>
-	{% block body %}
+
 	<body> 
+	
 <div id="header">
-<!--   <a id="logo"  class="toolbar_link" href="{{config.ROOT_URL}}"><img src="{{config.LOGO_URL}}" /></a>  -->
+  <a id="logo"  class="toolbar_link" href="/"><img src="{{config.LOGO_URL}}" /></a> 
  <div id="moto" > A Project Log For All Projects </div>
+
  {% if current_user.username %} 
- <div id="toolbar">
- <a class="toolbar_link" href="{{config.ROOT_URL}}"> home </a>
-<a class="toolbar_link" href="{{current_user.get_profile_url}}"> {{current_user.username}}</a>
-<a class="toolbar_link" href="{{config.ROOT_URL}}/settings"> settings </a>
-<a class="toolbar_link" href="{{config.ROOT_URL}}/logout"> logout </a>
-</div>
-{% endif %}
+
+
+	 <div id="toolbar">
+	 		
+	 		<ul id="nav">
+
+		{% if current_user.has_notifications() > 0 %}
+		 	<li > 
+		 		<a href="#" id="notif_flag" >
+		 	<span>{{ current_user.notification_count() }}</span>
+		 		</a>
+			 	<ul id="notif_dropdown" class="dropdown sfhover">
+				 	{% for notif in current_user.get_notifications() %}
+				 		<li >
+				 			<a href="{{notif.link}}" onclick="viewNotification()"><span>{{notif.message}}</span></a>
+				 		</li>
+
+			 		{% endfor %}
+				 </ul>
+			</li>
+	 	{% endif %}
+
+		 <li><a href="/"> home </a></li>
+		<li><a  href="{{current_user.get_profile_url()}}"> {{current_user.username}}</a></li>
+		<li><a  href="/edit_profile"> profile </a></li>
+		<li><a href="/logout"> logout </a></li>
+	</ul>
+
+	</div>
+
+	{% endif %}
 
 </div>
 
@@ -32,5 +69,4 @@
 		{% endblock footer%}
 	</div>
 	</body>
-	{% endblock body %}
 </html>

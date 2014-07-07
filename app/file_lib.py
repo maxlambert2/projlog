@@ -5,6 +5,8 @@ import uuid
 from math import floor
 
 def get_s3_url(object_name, folder=None):
+    if object_name is None or object_name == '':
+        return None
     if folder is None or folder == '':
         return 'https://s3.amazonaws.com/%s/%s' % (config.AWS_S3_BUCKET, object_name)
     else:

@@ -54,6 +54,7 @@ function s3_upload(){
     <legend > Edit Profile </legend>
   <ul>
 
+<!--
     <li> 
 <label for="profile_pic" >Profile Picture</label>
      <input id="profile_pic" name="profile_pic" type="file" onchange="s3_upload();"/>
@@ -63,11 +64,13 @@ function s3_upload(){
   <div id="preview_profile_pic"><img id="preview_img" src="{{profile_pic_url}}" /></div>
   <p id="status" class="filename"></p>
     </li>
-
+  -->
+        {{render_field(form.profile_pic)}}
         {{ render_field(form.username) }}
    {{ render_field(form.first_name) }}
   {{ render_field(form.last_name) }}
 	{{ render_field(form.location) }}
+    {{ render_field(form.about) }}
   </ul>
   <div class="save_cancel_box">
     <input type="submit" value="Save" class="button"/>

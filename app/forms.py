@@ -1,4 +1,4 @@
-from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField,  ValidationError
+from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField, IntegerField, ValidationError
 from wtforms.validators import Required, Length, regexp
 from models import User, Project
 from flask_wtf import Form
@@ -7,7 +7,7 @@ import config
 
 
 class LoginForm(Form):
-    email = TextField('Email', [Required()])
+    username = TextField('Email/Username', [Required()])
     password = PasswordField('Password', [Required()])
     remember_me = BooleanField('Remember Me', default = False)
     
@@ -19,9 +19,12 @@ class LoginForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
-        user = User.query.filter_by(email=self.email.data).first()  # @UndefinedVariable
+        if '@' in self.username.data:
+            user = User.query.filter_by(email=self.username.data).first()  # @UndefinedVariable
+        else:
+            user = User.query.filter_by(username=self.username.data).first()# @UndefinedVariable
         if user is None:
-            self.email.errors.append('Invalid Email or Password')
+            self.username.errors.append('Invalid Email or Password')
             return False
         self.user = user
         return True
@@ -29,7 +32,7 @@ class LoginForm(Form):
     
     
 class SignupForm(Form):
-    username = TextField('username', [Length(min=2, max=30)])
+    username = TextField('Username', [Length(min=2, max=30)])
     email = TextField('Email', [Length(min=6, max=40)])
     password = PasswordField('Password', [
         Required()
@@ -88,16 +91,28 @@ class ProjectEditForm(Form):
     picture = FileField(u'Project Picture', [regexp(u'^.*\.(jpg|JPG)$')])
     
     
-class LogEntryForm(Form):
+class PostForm(Form):
     comments = TextAreaField('Comments',validators = [Required()])
     picture = FileField(u'Picture', [regexp(u'^.*\.(jpg|JPG)$')])
+    
+class FriendRequestForm(Form):
+    requester_id = IntegerField('requester_id')
+    requested_id = IntegerField('requested_id')
+    
 
 class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])
     first_name = TextField('First Name', validators = [Length(max=40)])
     last_name = TextField('Last Name', validators = [Length(max=40)])
-    #profile_pic = FileField(u'Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG)$')])
+    profile_pic = FileField(u'Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG)$')])
     location = TextField('Location', validators = [Length(max=40)])
+    about = TextAreaField('About', validators=[Length(max=300)])
+    is_private = SelectField('Profile Privacy Setting', 
+                                  choices=[('0', 'Public'), 
+                                           ('1', 'Friends Only')], 
+                                  validators = Required())
+    gender = SelectField('Gender',
+                         choices=[('f','Female'), ('m', 'Male')])
 
     def __init__(self, *args, **kwargs):
         Form.__init__(self, *args, **kwargs)

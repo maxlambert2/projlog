@@ -33,7 +33,8 @@ a{
 cursor: pointer;  
 text-decoration:none;  
 border-style:none;
-color: #005CE6;
+color: #328ED9;
+text-decoration: none !important;
 } 
 
 body { 
@@ -50,10 +51,10 @@ body {
 
 div#header{
 	width:100%;
-	height:30px;
+	height:35px;
 	/*background-color:#E9EEF7;*/
 	padding: 2px;
-	border-bottom: 2px;
+	border-bottom: 1px;
 	border-bottom-color: #E9EEF7;
 	border-bottom-style: solid;
 	vertical-align: middle;
@@ -66,6 +67,7 @@ div#main{
 	width:100%;
 	margin:0 auto;
 	position: relative;
+	text-align: center;
 }
 
 
@@ -99,10 +101,11 @@ float: left;
 vertical-align: middle;
 height: 100%;
 font-size: 14px;
+font-style: bold;
 }
 
 #leftcolumn {
-width:150px;
+width:200px;
 float:left;
 height:100%;
 padding:10px;
@@ -123,6 +126,8 @@ float:right;
 #logo{
 	float:left;
 	margin: 0;
+	margin-top: 2px;
+	margin-left: 2px;
 	padding: 0;
 }
 
@@ -151,14 +156,16 @@ div#login_box {
 	height: 600px;
 }
 
+li.project_list{
+	margin-left: 1em;
+	font-size: 12px;
+}
+
 #preview_img {
 	width:300px;
 	height: 300px;
 }
 
-a:hover {
-	text-decoration:underline;
-}
 
 ul , dl{
 	list-style-type: none;
@@ -173,6 +180,8 @@ input,textarea, select  {
 	padding:5px 2px;
 	color:black;
 	text-align:left;
+	font-style: bold;
+	font-size:14px;
 	border: none;
 	outline: none;
 	border-radius: 4px;
@@ -184,15 +193,16 @@ input,textarea, select  {
 	border-width:1px;
 	border-color:#0066CC;
 	float:left;
+	margin-top: 2px;
 }
 
 form label {
-	margin-top: 0.4em;
-	margin-right: 1em;
+	margin-top: 0.7em;
+	margin-right: 0.5em;
 	float: left;
 	font-size: 14px;
 	text-align:right;
-	font-weight: bold;
+	font-weight: normal;
 	height:100%;
 	vertical-align: center;
 }
@@ -204,30 +214,31 @@ label.remember {
 	vertical-align:middle;
 }
 
-#preview_profile_pic {
-	width: 300px;
-}
 
 .button {
 	color:#ffffff;
-	background-color: #0029A6;
+	background-color: #328ED9;
 	text-decoration:none;
 	font-family: Helvetica;
 	font-weight:normal;
-	font-size: 14px;
+	font-size: 13px;
 	color:white;
-	border:none;
-	padding:0.7em 1em;
-	margin:5px 15px;
+	padding:0.6em 0.8em;
+	margin:4px 10px;
 	clear:none;
 	display: inline-block; 
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-khtml-border-radius: 4px;
+	border-bottom-style:1px solid black;
+	border-left-style: none;
+	border-top: 1px solid #99ADEB;
+	border-right-style: none;
 }
 
 a.button:focus{
-	border-width: 3px;
+	border-left-style: 1px solid #99ADEB;
+	border-right-style: 1px solid #99ADEB;
 }
 
 
@@ -236,8 +247,7 @@ form {
 	padding: 10px;
 	margin:10px;
 	border-style: none;
-	margin: auto;
-	width: 50%;
+	margin: 0;
 	font-size: 16px;
 }
 
@@ -275,8 +285,12 @@ legend{
 	margin-bottom: 20px;
 }
 
+.profile_summary{
+	font-style: bold;
+}
+
 #preview_profile_pic{
-	width:100%;
+	width:350px;
 	text-align: center;
 	padding: 10px;
 	clear:both;
@@ -286,12 +300,18 @@ legend{
 	clear:both;
 }
 
+#large_pic {
+	margin: 30px 80px;
+
+}
+
 #status {
 	clear:both;
 	margin: 0;
 	padding: 5px;
 	text-align: center;
 }
+
 
 
 form ul li {
@@ -382,24 +402,9 @@ input[type="file"] {
 
 input:not([type="submit"]):focus{
 	border-width: 3px;
+	margin-top:0px;
 }
 
-a.toolbar_link {
-	height: 100%;
-	vertical-align: center;
-	float:left;
-	padding: 8px;
-	font-weight: bold;
-}
-
-div#toolbar {
-	height:100%;
-	margin-right: 20px;
-	vertical-align: center;
-	float:right;
-	font-size: 12px;
-
-}
 
 ul.leftbar {
 	padding: 5px;
@@ -436,6 +441,127 @@ a.button:hover{
 
 
 div.clearfloats {clear:both;}
+
+ul#profile_about {
+	width: 150px;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+vertical-align: middle;
+display: block;
+}
+
+#profile_about li {
+line-height: 18px;
+border-bottom: 1px solid #F2F2F2;
+width: 100%;
+text-align: center;
+vertical-align: middle;
+}
+
+#user_profile_name{
+	font-size: 16px;
+	font-weight: bold;
+	padding: 5px;
+
+}
+
+#notif_flag{
+	border-radius:50%;
+	width:20px;
+	height:20px;
+	background: #FF6666;
+	color: #fff;
+	padding:0px;
+/*	-webkit-border-radius: 10px; 
+	-moz-border-radius: 10px;*/
+	text-align: center;
+	vertical-align: middle;
+	display: block;
+	line-height: 20px;
+
+}
+
+#notif_flag span {
+	display:inline-block;
+	vertical-align: middle;
+}
+
+
+#nav{
+	margin-top: 5px;
+	font-weight: bold;
+	height:20px;
+	padding: 5px;
+	vertical-align: middle;
+}
+
+#nav ul.dropdown  {
+margin-top: 0;
+vertical-align: middle;
+height:800px;
+}
+
+#nav ul.dropdown li {
+	float:left;
+	font-weight: bold;
+	display:block;
+	background-color: #E0F0FF;
+	color: black;
+	border: 1px solid #B3C0CC;
+	height: 30px;
+	vertical-align: middle;
+}
+
+ul.dropdown li a {
+	font-size: 13px;
+	width: 100%;
+	display: block;
+	text-decoration: none;
+	height: 30px;
+	vertical-align: middle;
+	line-height: 30px;
+}
+ul.dropdown li a span{
+	display: block;
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+
+div#toolbar {
+	height:100%;
+	margin-right: 20px;
+	vertical-align: middle;
+	float:right;
+	font-size: 12px;
+	height: 500px;
+}
+
+#nav ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	vertical-align: middle;
+}
+
+
+#nav li {
+	padding-right: 15px;
+	float: left;
+	list-style: none;
+
+}
+
+#nav li ul {
+	position: absolute;
+	left: 5em;
+}
+
+#nav li:hover ul, 
+#nav li.sfhover ul {
+	left: auto;
+}
 
 .submit_cancel_buttons {
 	width:150px;

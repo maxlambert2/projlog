@@ -1,0 +1,14 @@
+   {% from "_form_macro.html" import render_field %}
+
+    <form action="/add_friend" method="post" name="addfriend" class="signup front_page">
+  {{form.hidden_tag()}}
+     <fieldset>
+    <legend class="signup"> Add Friend </legend>
+  <ul>
+   {{ render_field(form.requester_id) }}
+   {{ render_field(form.requested_id) }}
+
+  </ul>
+  <input id="signup_button" type="submit" value="Add Friend" class="button" />
+ </fieldset>
+  </form>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+ {% from "_display_user_macro.html" import display_user %}
+
+{% block content %}
+
+<div id="main" >
+
+{% for user in user_requests %}
+<table>
+	<tr>
+		<td>
+			{{display_user(user)}}
+		</td>
+
+<img id="large_pic" src="{{user.get_profile_pic_large_url()}}" />
+
+<div class="back_button">
+
+<a href="{{user.get_profile_url()}}"> Back </a>
+</div>
+
+
+
+
+</div>
+
+{% endblock content %}

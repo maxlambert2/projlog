@@ -4,11 +4,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from  app import db
 import md5
-from file_lib import get_s3_url
+from file_lib import get_s3_url, generate_filename, resize_and_crop
 import config
 import unicodedata
 import re
 from random import randrange
+import boto
 
 
 #import string
@@ -32,13 +33,13 @@ def base36encode(number):
 metadata = MetaData()
 
 followers = db.Table('followers',  # @UndefinedVariable
-    db.Column('follower_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
-    db.Column('followed_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
+    db.Column('follower_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
+    db.Column('followed_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
 )
    
 
-friends = db.Table('friends',   # @UndefinedVariable
-    db.Column('user_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
+friendships = db.Table('friendships',   # @UndefinedVariable
+    db.Column('user_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
     db.Column('friend_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
     created_date = Column(DateTime, default=datetime.datetime.now)
 )
@@ -50,13 +51,14 @@ class User(db.Model):
     username = Column(String(30), unique=True)
     email = Column(String(60), unique=True)
     active = Column(Boolean, default=True)
-    privacy = Column(SmallInteger, default=0)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
+    is_private = Column(Boolean, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
     pw_hash = Column(String(100))
     first_name = Column(String(30))
     last_name = Column(String(30))
     location = Column(String(30))
+    gender = Column(String(1))
     profile_pic_id = Column(String(60))
-    thumbnail_id = Column(String(60))
+    about = Column(Text)
     follows = relationship('User', 
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
@@ -64,39 +66,101 @@ class User(db.Model):
         backref = backref('followers', lazy = 'dynamic'), 
         lazy = 'dynamic')
     friends = relationship('User',
-        secondary = friends,
-        primaryjoin = (friends.c.user_id==id),
-        secondaryjoin = (friends.c.friend_id==id),
-        lazy = 'dynamic'
+        secondary = friendships,
+        primaryjoin = (friendships.c.user_id==id),
+        secondaryjoin = (friendships.c.friend_id==id),
+        backref = backref('friendships', lazy = 'dynamic'),
+        lazy='dynamic'
         )
     
     projects = relationship('Project')
+    
 
     def __init__(self, username, email,password):
         self.username = username
         self.email = email
         self.password = password
         self.pw_hash = generate_password_hash(password)
+       
         
     def __repr__(self):
         return '<User %r>' % (self.username)
     
+    def is_private(self):
+        return self.is_private
+
+    def get_location(self):
+        if self.location is None:
+            return ''
+        else:
+            return self.location
+    
+    def has_notifications(self):
+        return Notification.query.filter_by(user_id=self.id,seen=False).first() is not None
+    
+    def notification_count(self):
+        return Notification.query.filter_by(user_id=self.id,seen=False).count()
+        
+    def get_notifications(self):
+        return Notification.query.filter_by(user_id=self.id, seen=False).limit(10).all()
+    
+    def is_viewable_by(self,user_id):
+        if self.is_private == False or self.id == user_id:
+            return True
+        elif self.friends.filter(friendships.c.user_id == user_id).count() > 0:
+            return True
+        else:
+            return False
+    
     def get_profile_url(self):
         return config.ROOT_URL + '/user/' + self.username
     
-    def get_profile_pic_url(self):
+    def get_profile_pic_id(self, file_ext=config.DEFAULT_IMG_EXT):
         if self.profile_pic_id is None:
-            return None
+            self.profile_pic_id = generate_filename(self.username, ext=file_ext)
+        return self.profile_pic_id
+    
+    def get_profile_pic_url(self):
+        return self.get_profile_pic_large_url()
+                
+    def get_profile_pic_large_url(self):
+        if self.profile_pic_id is None:
+            return config.DEFAULT_PROFILE_PIC
         else:
-            file_name = self.profile_pic_id
+            file_name = 'large-'+self.profile_pic_id
             return get_s3_url(file_name)
-    
+
     def get_thumbnail_url(self):
-        file_name = self.thumbnail_id
-        return get_s3_url(file_name)
+        if self.profile_pic_id is None:
+            thumbnail_id = config.DEFAULT_THUMBNAIL
+        else:
+            thumbnail_id = 'thumbnail-'+self.profile_pic_id
+        return get_s3_url(thumbnail_id)
     
+    def get_profile_pic_medium_url(self):
+        if self.profile_pic_id is None:
+            pic_id = config.DEFAULT_PROFILE_PIC_MED
+        else:
+            pic_id = 'medium-'+self.profile_pic_id
+        return get_s3_url(pic_id)
+    
+    def set_profile_pic(self, filepath, file_ext=config.DEFAULT_IMG_EXT):
+        conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+        bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+        profile_pic_id = self.get_profile_pic_id(file_ext=file_ext)
+        for size, dim in config.PROFILE_PIC_SIZE.iteritems():  
+            pic = resize_and_crop(filepath, dim)
+            pic_id = size.lower()+'-'+profile_pic_id
+            key_pic = bucket.new_key(pic_id)
+            key_pic.set_contents_from_file(pic)  
+            key_pic.set_acl('public-read')
+        
+        
     def get_full_name(self):
-        return self.first_name + ' ' + self.last_name
+        if self.first_name is None:
+            return self.username
+        else:
+            return self.first_name + ' ' + self.last_name
          
     def is_authenticated(self):
         return True
@@ -182,10 +246,10 @@ class User(db.Model):
 class Project(db.Model):
     __tablename__ = 'project'
     id = Column(Integer, primary_key=True)
-    id_str = Column(String(10))
+    id_str = Column(String(10), index=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
     privacy_mode = Column(SmallInteger, default=0)
-    created_by = Column(Integer, ForeignKey('user.id'))
+    created_by = Column(Integer, ForeignKey('user.id'), index=True)
     project_name = Column(String(50))
     goal = Column(String(200))
     slug = Column(String(30))
@@ -202,30 +266,45 @@ class Project(db.Model):
         self.created_by = created_by
         self.privacy_mode=privacy
 
-    
+    def has_pic(self):
+        if self.pic_id is None:
+            return False
+        else:
+            return True
+
     def get_id_str(self):
         id_str = str(base36encode(500000+ self.id *3 + randrange(1,3)))
         self.id_str=id_str
         return id_str
     
     def get_slug(self):
-        if self.slug is None:
-            name_sub = self.project_name[:config.SLUG_LENGTH]
-            slug = unicodedata.normalize('NFKD', name_sub)
-            slug = slug.encode('ascii', 'ignore').lower()
-            slug = re.sub(r'[a-z0-9]+', '-', slug).strip('-')
-            slug = re.sub(r'[-]+', '-', slug)
-            self.slug=slug
+        _slugify_strip_re = re.compile(r'[^\w\s-]')
+        _slugify_hyphenate_re = re.compile(r'[-\s]+')
+        value = self.project_name[:config.SLUG_LENGTH]
+        if not isinstance(value, unicode):
+            value = unicode(value)
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        value = unicode(_slugify_strip_re.sub('', value).strip().lower())
+        slug = _slugify_hyphenate_re.sub('-', value)
+        self.slug=slug
         return self.slug
         
     def get_url(self):
-        if self.slug is None or self.id_str is None:
-            if self.slug is None:
-                self.get_slug()
-            if self.id_str is None:
-                    self.get_id_str()
+        updated=0
+        if self.slug is None or len(self.slug.strip())==0:
+            self.get_slug()
+            updated+=1
+        if self.id_str is None:
+            self.get_id_str()
+            updated+=1
         path = '/project/'+str(self.id_str)+'/'+self.slug+'/'
         project_url = config.ROOT_URL+path
+        if updated > 0:
+            try:
+                db.session.add(self)  # @UndefinedVariable
+                db.session.commit()  # @UndefinedVariable
+            except:
+                db.session.rollback()  # @UndefinedVariable
         return project_url
     
     def get_edit_url(self):
@@ -246,25 +325,52 @@ class Project(db.Model):
 class ProjectMember(db.Model):
     __tablename__ = 'project_member'
     id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey('project.id'))
+    project_id = Column(Integer, ForeignKey('project.id'), index=True)
     member = Column(Integer, ForeignKey('user.id'))
-    member_type = Column(SmallInteger)  #1: member; 2: advisor
     
 
-class FollowRequest(db.Model):
-    __tablename__ = 'follow_request'
+class Notification(db.Model):
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
-    user_requesting = Column(Integer, ForeignKey('user.id'))
-    user_approving = Column(Integer, ForeignKey('user.id'))
-    approved = Column(Boolean, default=False)
+    user_id =  Column(Integer, ForeignKey('user.id'), index=True)
+    message = Column(String(100))
+    link = Column(String(100))
+    seen = Column(Boolean, default=False)
+        
+    def __init__(self, user_id, message, link):
+        self.message=message
+        self.user_id=user_id
+        self.link=link
+        
+class NotificationMixin(object):
+    def __init__(self,user_id, msg, link):
+        notif = Notification(user_id=user_id, message =msg,link=link)
+        db.session.add(notif)  # @UndefinedVariable
 
+
+class FriendRequest(NotificationMixin, db.Model):
+    __tablename__ = 'friend_request'
+    id = Column(Integer, primary_key=True)
+    created_date = Column(DateTime, default=datetime.datetime.now)
+    requester_user_id = Column(Integer, ForeignKey('user.id'))
+    requested_user_id = Column(Integer, ForeignKey('user.id'), index=True)
+    approved = Column(Boolean, default=False)
+    ignore = Column(Boolean, default=False)
+    
+    def __init__(self,requester_user_id, requested_user_id):
+        requester = User.query.get(requester_user_id)
+        msg = requester.get_full_name()+" sent you a friend request"
+        link = "/friend_requests"
+        super(FriendRequest,self).__init__(user_id=requested_user_id, msg=msg,link=link)
+        self.requester_user_id = requester_user_id
+        self.requested_user_id = requested_user_id
+            
 class Post(db.Model):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
     created_by =  Column(Integer, ForeignKey('user.id'))
-    project = Column(Integer, ForeignKey('project.id'))
+    project = Column(Integer, ForeignKey('project.id'), index=True)
     text = Column(Text())
     pic_id = Column(String(100))
     comments = relationship('PostComment',  lazy='dynamic')
@@ -277,20 +383,32 @@ class Post(db.Model):
             file_name = self.pic_id
             return get_s3_url(file_name)
     
-class PostComment(db.Model):
+class PostComment(NotificationMixin, db.Model):
     __tablename__ = 'post_comment'
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
-    post = Column(Integer, ForeignKey('post.id'))
+    post = Column(Integer, ForeignKey('post.id'), index=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     text = Column(Text())
     
-class PostLike(db.Model):
+    def __init__(self,user_id,user_name, post_id,text, link):
+        msg = user_name+" commented on your post"
+        super(PostComment,self).__init__(user_id=user_id, msg=msg,link=link)
+        self.user_id=user_id
+        self.post=post_id
+        self.text=text
+    
+class PostLike(NotificationMixin,  db.Model):
     __tablename__ = 'post_like'
     id = Column(Integer, primary_key=True)
-    post = Column(Integer, ForeignKey('post.id'))
+    post = Column(Integer, ForeignKey('post.id'), index=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     
+    def __init__(self,user_id,user_name, post_id, link):
+        msg = user_name+" liked your post"
+        super(PostLike,self).__init__(user_id=user_id, msg=msg,link=link)
+        self.user_id=user_id
+        self.post=post_id
 
     
     
