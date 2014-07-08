@@ -26,12 +26,12 @@ def sign_s3():
     expires = int(time.time()+10)
     amz_headers = "x-amz-acl:public-read"
 
-    put_request = "PUT\n\n%s\n%d\n%s\n/%s/%s/%s" % (mime_type, expires, amz_headers, config.AWS_S3_BUCKET, folder, object_name)
+    put_request = "PUT\n\n%s\n%d\n%s\n/%s/%s" % (mime_type, expires, amz_headers, config.AWS_S3_BUCKET, object_name)
 
     signature = base64.encodestring(hmac.new(config.AWS_SECRET_ACCESS_KEY, put_request, sha1).digest())
     signature = urllib.quote_plus(signature.strip())
 
-    url = get_s3_url(object_name, folder)
+    url = get_s3_url(object_name)
 
     return json.dumps({
         'signed_request': '%s?AWSAccessKeyId=%s&Expires=%d&Signature=%s' % (url, config.AWS_ACCESS_KEY_ID, expires, signature),
@@ -113,30 +113,51 @@ def edit_profile(status=None):
     previous_page = config.ROOT_URL
     form.old_username = user.username
     profile_pic_url = user.get_profile_pic_url()
-    if profile_pic_url is None:
-        profile_pic_url = config.DEFAULT_PROFILE_PIC_URL
     
     temp_file_name = user.username
-    if request.method == 'POST' and form.validate_on_submit():
-        user.username = form.username.data
-        user.first_name = form.first_name.data
-        user.last_name = form.last_name.data
-        user.location = form.location.data
-        picture_file = request.files['profile_pic']
-        filename = request.files['profile_pic'].filename
-        (file_id, file_extension) = os.path.splitext(filename)
-        if picture_file: 
-            pic_id = user.get_profile_pic_id(file_extension)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], pic_id) 
-            picture_file.save(filepath)
-            user.set_profile_pic(filepath)
-            os.remove(filepath)         
-        db.session.add(user)  # @UndefinedVariable
-        db.session.commit()  # @UndefinedVariable
-        return redirect(previous_page)
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            user.username = form.username.data
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+            user.location = form.location.data
+            user.gender = form.gender.data
+            user.about = form.about.data
+            user.privacy = form.privacy.data
+            user.is_pr
+            file = request.files['profile_pic']
+            filename = secure_filename(file.filename)
+            if file and allowed_file(filename):
+                (file_id, file_extension) = os.path.splitext(filename)
+                #if picture_file: 
+                filename = user.get_profile_pic_filename(file_extension)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
+                file.save(filepath)
+                #user.set_profile_pic(filepath)
+                conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+                bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+                for size, dims in config.PROFILE_PIC_SIZE.iteritems():
+                    pic = resize_and_crop(filepath, dims)
+                    pic_filename=size.lower()+'-'+filename
+                #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+                    key_pic = bucket.new_key(pic_filename)
+                    key_pic.set_contents_from_file(pic)  
+                    key_pic.set_acl('public-read')
+                os.remove(filepath) 
+            else:
+                return "no file"        
+            db.session.add(user)  # @UndefinedVariable
+            db.session.commit()  # @UndefinedVariable
+        else:
+            return "form did not validate"
     else:
-        form = ProfileForm(username=user.username, first_name=user.first_name, last_name=user.last_name, location=user.location)
-   
+        form = ProfileForm(username=user.username, 
+                           first_name=user.first_name, last_name=user.last_name,
+                            location=user.location,
+                            gender=user.gender,
+                            about=user.about,
+                            privacy=user.get_privacy())
+
     return render_template('edit_profile.html', 
                            form=form, status=status, user=user, 
                            previous_page=previous_page, 

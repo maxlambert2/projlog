@@ -21,6 +21,22 @@ def allowed_file(filename):
 #     k = Key(bucket)
 #     k.key = 
 
+def resize_image(filepath, width=config.PROFILE_PIC_WIDTH):
+    image = Image.open(filepath)
+
+    #(width, height) = image.size
+    new_width = width
+    new_height = width
+
+    resizedImage = image.resize((new_width, new_height))
+
+    # Turn back into file-like object
+    resizedImageFile = cStringIO.StringIO()
+    resizedImage.save(resizedImageFile , 'PNG', optimize = True)
+    resizedImageFile.seek(0)    # So that the next read starts at the beginning
+
+    return resizedImageFile
+
 def resize_and_crop(img_path, size, crop_type='top'):
     """
     Resize and crop an image to fit the specified size.

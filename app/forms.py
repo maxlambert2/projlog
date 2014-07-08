@@ -104,20 +104,19 @@ class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])
     first_name = TextField('First Name', validators = [Length(max=40)])
     last_name = TextField('Last Name', validators = [Length(max=40)])
-    profile_pic = FileField(u'Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG)$')])
+    #profile_pic = FileField(u'Change Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG|jpeg|JPEG|gif|GIF)$')])
     location = TextField('Location', validators = [Length(max=40)])
     about = TextAreaField('About', validators=[Length(max=300)])
-    is_private = SelectField('Profile Privacy Setting', 
+    privacy = SelectField('Profile Privacy Setting', 
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only')], 
-                                  validators = Required())
+                                  validators = [Required()])
     gender = SelectField('Gender',
-                         choices=[('f','Female'), ('m', 'Male')])
+                         choices=[('', ""), ('f',"Female"), ('m', "Male")])
 
     def __init__(self, *args, **kwargs):
         Form.__init__(self, *args, **kwargs)
         self.old_username = None
-
     
     def validate(self):
         rv = Form.validate(self)

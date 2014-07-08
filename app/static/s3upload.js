@@ -63,8 +63,8 @@
     S3Upload.prototype.executeOnSignedUrl = function(file, callback) {
       var this_s3upload, xhr;
       this_s3upload = this;
-      file_type = file.type
-      file_post_fix = file_type.substr(file_type.length - 3);
+      file_type = file.type;
+      file_post_fix = 'JPG'; //file_type.split('/').pop()
       this.s3_object_name = document.getElementById('file_name').value+'.'+file_post_fix;
 
       xhr = new XMLHttpRequest();
@@ -99,11 +99,11 @@
             this_s3upload.onProgress(100, 'Upload completed.');
             return this_s3upload.onFinishS3Put(public_url);
           } else {
-            return this_s3upload.onError('Upload error: ' + xhr.status);
+            return this_s3upload.onError();//'Upload error: ' +  this.responseText);
           }
         };
         xhr.onerror = function() {
-          return this_s3upload.onError('XHR error.');
+          return this_s3upload.onError();//'XHR error. '+  this.responseText);
         };
         xhr.upload.onprogress = function(e) {
           var percentLoaded;

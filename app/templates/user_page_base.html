@@ -3,8 +3,6 @@
 
 	{% block javascript %}  
 
-
-
 {% if request_sent %}
 <script type="text/javascript" >
 $(function(){
@@ -20,7 +18,6 @@ $(button_id).removeAttr("onclick");
 	 {% endblock javascript %}
 
 {% block content %}
-<div id="main" >
   	<div id="leftcolumn" >
   		{% block profile_about %}
 		<div class="profile_summary">
@@ -41,6 +38,6 @@ $(button_id).removeAttr("onclick");
 
 </div>
 
-</div>
+
 
 {% endblock content %}

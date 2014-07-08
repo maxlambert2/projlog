@@ -10,14 +10,12 @@
 		<title> {% block title %} Projlog {% endblock title %} </title>
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		<script type="text/javascript" >
-			var csrftoken = $('meta[name=csrf-token]').attr('content')
+		var csrftoken = $('meta[name=csrf-token]').attr('content');
 			$(document).ajaxSend(function(event, jqxhr, settings) {
         		if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
             jqxhr.setRequestHeader("X-CSRFToken", csrftoken)
         }
-    
-});
-</script>
+		});</script>
 	<script type="text/javascript" src="{{ url_for('static', filename='base.js') }}" ></script>
 		{% block javascript %}   {% endblock javascript %}
 	</head>
@@ -40,7 +38,7 @@
 		 		<a href="#" id="notif_flag" >
 		 	<span>{{ current_user.notification_count() }}</span>
 		 		</a>
-			 	<ul id="notif_dropdown" class="dropdown sfhover">
+			 	<ul id="notif_dropdown" class="dropdown">
 				 	{% for notif in current_user.get_notifications() %}
 				 		<li >
 				 			<a href="{{notif.link}}" onclick="viewNotification()"><span>{{notif.message}}</span></a>
@@ -53,7 +51,7 @@
 
 		 <li><a href="/"> home </a></li>
 		<li><a  href="{{current_user.get_profile_url()}}"> {{current_user.username}}</a></li>
-		<li><a  href="/edit_profile"> profile </a></li>
+		<li><a  href="/edit_profile"> settings </a></li>
 		<li><a href="/logout"> logout </a></li>
 	</ul>
 
@@ -62,11 +60,14 @@
 	{% endif %}
 
 </div>
-
+<div id="main">
 	{% block content %} {% endblock content %}
-	<div id="footer">
+		<div id="footer">
 		{% block footer %}  &#169; 2013 Projlog
 		{% endblock footer%}
 	</div>
+</div>
+
+
 	</body>
 </html>

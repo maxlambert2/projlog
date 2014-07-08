@@ -3,25 +3,22 @@
 
 {% block content %}
 
-<div id="main" >
 
 {% for user in user_requests %}
+<div class="page_title">Friend Requests</div>
 <table>
 	<tr>
 		<td>
 			{{display_user(user)}}
 		</td>
 
-<img id="large_pic" src="{{user.get_profile_pic_large_url()}}" />
-
-<div class="back_button">
-
-<a href="{{user.get_profile_url()}}"> Back </a>
-</div>
+		<td>
+			{{ display_user(user.id) }}
+		</td>
+	</tr>
 
 
 
 
-</div>
 
 {% endblock content %}

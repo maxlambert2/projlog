@@ -2,12 +2,17 @@
 
 {% block javascript %}
 
-<script type="text/javascript" src="https://raw.github.com/lodash/lodash/master/dist/lodash.min.js"></script>
+<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>
 <script type="text/javascript" src="/static/s3upload.js"></script>
 
 <script type="text/javascript">
 
+
 $(window).load(function () {
+    var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
+    $("#preview_img").attr("src", pic_src) ;
+
+
     var intervalFunc = function () {
         $('#file-name').html('File loaded');
     };
@@ -48,27 +53,29 @@ function s3_upload(){
 
 
 
-    <form action="/edit_profile" method="post" name="edit_profile" enctype=multipart/form-data>
+    <form action="/edit_profile" method="post" name="edit_profile" enctype=multipart/form-data class="full_page">
   {{form.hidden_tag()}}
        <fieldset>
     <legend > Edit Profile </legend>
   <ul>
 
-<!--
+
     <li> 
-<label for="profile_pic" >Profile Picture</label>
-     <input id="profile_pic" name="profile_pic" type="file" onchange="s3_upload();"/>
+<label for="profile_pic" >Change Profile Picture</label>
+     <input id="profile_pic" name="profile_pic" type="file" size="20" onchange="s3_upload();"/> 
 <input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
 <input type="hidden" id="file_name" value="{{file_name}}" />
-  <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/>
-  <div id="preview_profile_pic"><img id="preview_img" src="{{profile_pic_url}}" /></div>
+  <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/> 
+  <div id="preview_profile_pic"><img id="preview_img" src="" /></div>
   <p id="status" class="filename"></p>
     </li>
-  -->
-        {{render_field(form.profile_pic)}}
+
+      {#  {{render_field(form.profile_pic)}}   #}
         {{ render_field(form.username) }}
+        {{ render_field(form.privacy) }}
    {{ render_field(form.first_name) }}
   {{ render_field(form.last_name) }}
+    {{ render_field(form.gender) }}
 	{{ render_field(form.location) }}
     {{ render_field(form.about) }}
   </ul>

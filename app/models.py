@@ -51,7 +51,7 @@ class User(db.Model):
     username = Column(String(30), unique=True)
     email = Column(String(60), unique=True)
     active = Column(Boolean, default=True)
-    is_private = Column(Boolean, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
+    privacy = Column(SmallInteger, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
     pw_hash = Column(String(100))
     first_name = Column(String(30))
     last_name = Column(String(30))
@@ -81,13 +81,20 @@ class User(db.Model):
         self.email = email
         self.password = password
         self.pw_hash = generate_password_hash(password)
+        self.privacy=0
        
         
     def __repr__(self):
         return '<User %r>' % (self.username)
     
     def is_private(self):
-        return self.is_private
+        return self.privacy == 1;
+    
+    def get_privacy(self):
+        if self.privacy is None:
+            return 0;
+        else:
+            return self.privacy
 
     def get_location(self):
         if self.location is None:
@@ -115,7 +122,7 @@ class User(db.Model):
     def get_profile_url(self):
         return config.ROOT_URL + '/user/' + self.username
     
-    def get_profile_pic_id(self, file_ext=config.DEFAULT_IMG_EXT):
+    def get_profile_pic_filename(self, file_ext=config.DEFAULT_IMG_EXT):
         if self.profile_pic_id is None:
             self.profile_pic_id = generate_filename(self.username, ext=file_ext)
         return self.profile_pic_id
@@ -125,7 +132,7 @@ class User(db.Model):
                 
     def get_profile_pic_large_url(self):
         if self.profile_pic_id is None:
-            return config.DEFAULT_PROFILE_PIC
+            file_name = config.DEFAULT_PROFILE_PIC
         else:
             file_name = 'large-'+self.profile_pic_id
             return get_s3_url(file_name)

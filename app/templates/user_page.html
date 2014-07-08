@@ -3,7 +3,6 @@
 {% block profile_about %}
 
 
-
 <a href="{{url_for('user_profile_pic_page', username=user.username)}}">	
 <img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
 </a>

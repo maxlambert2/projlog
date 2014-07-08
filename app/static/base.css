@@ -66,12 +66,12 @@ div#main{
 	min-width: 900px;
 	width:100%;
 	margin:0 auto;
-	position: relative;
+	position: absolute;
 	text-align: center;
+	display: block;
 }
 
-
-div#footer{
+#footer{
 	clear:both;
 	vertical-align:middle;
 	text-align:center;
@@ -79,7 +79,9 @@ div#footer{
 	min-height:60px;
 	font-size:12px;
 	color:#858585;
-	width: 100%;
+	height:50px;
+	width: 900px;
+	display: block;
 }
 
 .landing_page #leftcolumn {
@@ -259,10 +261,16 @@ form.front_page {
 	border-radius: 12px;
 }
 
+@media print {
+  input, textarea {overflow:visible;}}
 
 form label {
 	width: 120px;
 	text-align: right;
+}
+
+form.full_page label {
+	width: 180px;
 }
 
 div.single_form_page {
@@ -270,12 +278,20 @@ div.single_form_page {
 	width: 100%;  
 }
 
-
+form.full_page {
+	height: 800px;
+}
 
 form fieldset{
 	padding:5px;
 	text-align:center;
 	width:100%;
+
+}
+
+form.full_page {
+
+	width:800px;
 
 }
 
@@ -287,6 +303,7 @@ legend{
 
 .profile_summary{
 	font-style: bold;
+	padding: 10px;
 }
 
 #preview_profile_pic{
@@ -347,13 +364,10 @@ form ul.errors li {
 	color:red;
 }
 
-fieldset .save_cancel_box {
-	width:100%;
-	text-align: center;
-	padding:20px;
+.save_cancel_box {
+	width:200px;
+	padding-top:20px;
 	padding-left: 70px;
-	margin-right: auto;
-	margin-left: auto;
 	font-size: 14px;
 }
 
@@ -467,19 +481,18 @@ vertical-align: middle;
 }
 
 #notif_flag{
-	border-radius:50%;
 	width:20px;
 	height:20px;
 	background: #FF6666;
 	color: #fff;
 	padding:0px;
+	margin: 0px;
 /*	-webkit-border-radius: 10px; 
 	-moz-border-radius: 10px;*/
 	text-align: center;
 	vertical-align: middle;
 	display: block;
 	line-height: 20px;
-
 }
 
 #notif_flag span {
@@ -494,12 +507,23 @@ vertical-align: middle;
 	height:20px;
 	padding: 5px;
 	vertical-align: middle;
+	z-index: 10;
 }
 
 #nav ul.dropdown  {
 margin-top: 0;
 vertical-align: middle;
-height:800px;
+position: absolute;
+z-index: 10;
+}
+
+#notif_dropdown .sfhover {
+	height: 800px;
+	background-color: blue;
+}
+
+fieldset{
+	width: 800px;
 }
 
 #nav ul.dropdown li {
@@ -550,18 +574,23 @@ div#toolbar {
 	padding-right: 15px;
 	float: left;
 	list-style: none;
+	height: 20px;
+	vertical-align: middle;
+	padding-top: 3px;
 
 }
 
 #nav li ul {
 	position: absolute;
-	left: 5em;
+	left: -999em;
 }
 
 #nav li:hover ul, 
 #nav li.sfhover ul {
 	left: auto;
 }
+
+#nav 
 
 .submit_cancel_buttons {
 	width:150px;

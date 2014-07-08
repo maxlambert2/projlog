@@ -18,6 +18,7 @@ DEFAULT_PROFILE_PIC_MED = 'default_profile_pic_med.gif'
 
 DEFAULT_THUMBNAIL = 'default_thumbnail.gif'
 DEFAULT_IMG_EXT = 'PNG'
+PROFILE_PIC_WIDTH=600
 
 CSRF_ENABLED = True
 
