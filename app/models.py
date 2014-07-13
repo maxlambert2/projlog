@@ -1,5 +1,5 @@
-from sqlalchemy import *
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy import MetaData, Column, String, Boolean, Text, Integer, DateTime, SmallInteger, ForeignKey
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from  app import db

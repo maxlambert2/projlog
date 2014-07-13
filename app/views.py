@@ -1,11 +1,12 @@
 from app import app, db, login_manager
+from sqlalchemy.sql.expression import insert
 import os
 from forms import *
 from flask import render_template, flash, redirect , Flask, url_for, request, g, session
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from models import User, Project, FriendRequest
+from models import  FriendRequest, friendships
 import config
 from file_lib import *
 import time, base64, urllib, json, hmac
@@ -13,6 +14,8 @@ from hashlib import sha1
 from werkzeug.utils import secure_filename
 import boto
 from PIL import Image
+from flask_wtf.csrf import CsrfProtect
+csrf = CsrfProtect()
 
 
 @app.route('/sign_s3_upload/')
@@ -38,6 +41,10 @@ def sign_s3():
          'url': url
       })
     
+@csrf.error_handler
+def csrf_error(reason):
+    return render_template('csrf_error.html', reason=reason), 400
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -105,7 +112,7 @@ def signup():
     return render_template('signup.html', signup_form=form)
 
 
-@app.route('/edit_profile', methods=['GET', 'POST'])
+@app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile(status=None):
     user=current_user
@@ -190,7 +197,8 @@ def add_friend():
             requester_id =request.form['requester_id']
             requested_id =request.form['requested_id']
         count = FriendRequest.query.filter_by(requester_user_id=requester_id, requested_user_id=requested_id).count()# @UndefinedVariable
-        if count == 0:
+        count_reverse = FriendRequest.query.filter_by(requester_user_id=requested_id, requested_user_id=requester_id).count()# @UndefinedVariable
+        if count+count_reverse == 0:
             friend_request = FriendRequest(requester_user_id=requester_id, requested_user_id=requested_id)
             try:
                 db.session.add(friend_request)# @UndefinedVariable
@@ -201,33 +209,33 @@ def add_friend():
         return  render_template('add_friend_form.html',form=form)
     return "Success"
 
-@app.route('/approve_friend', methods=['POST'])
+#@csrf.exempt
+@app.route('/approve_friend', methods=['GET', 'POST'])
 def approve_friend():  
-    form = FriendApproveForm()
-    if form.validate_on_submit():
-        if request.method =='POST':
-            requester_id = request.form['requester_id']
-            requested_id = request.form['requested_id']
-            approve_request = request.form['approve']
-        friend_request = FriendRequest.query.filter_by(requester_user_id=requester, requested_user_id=requested, ignore=False).first()# @UndefinedVariable
-        if friend_request:
-            current_user=User.query.get(requested_id)# @UndefinedVariable
-            if approve_request:
-                user = User.query.get(requester_id) # @UndefinedVariable
-                current_user.friends.append(requester_id)
-                user.friends.append(current_user)
-                current_user.friends.append(user)
-                friend_request.approve=True
-                db.session.add(friend_request)# @UndefinedVariable
-                db.session.add(current_user)# @UndefinedVariable
-                db.session.add(user)# @UndefinedVariable
-                db.session.commit()# @UndefinedVariable
-            else:
-                friend_request.approve=False
-                friend_request.ignore=True
-                db.session.commit()# @UndefinedVariable    
+#     form = FriendApproveForm()
+#     if form.validate_on_submit():
+#         #if request.method =='POST':
+#         requester_id = form.requester_id.data
+#         requested_id = form.requested_id.data
+#     else:
+    requester_id = request.args['requester']
+    requested_id = request.args['requested']
+    approve_request = True#request.form['approve']
+    friend_request = FriendRequest.query.filter_by(requester_user_id=requester_id, requested_user_id=requested_id, ignore=False).first()# @UndefinedVariable
+    if friend_request:
+        if approve_request:
+            ins1=friendships.insert().values(user_id=requester_id, friend_id=requested_id)# @UndefinedVariable
+            ins2=friendships.insert().values(user_id=requested_id, friend_id=requester_id)# @UndefinedVariable
+            db.engine.execute(ins1) #@UndefinedVariable
+            db.engine.execute(ins2) #@UndefinedVariable
+            friend_request.approve=True
+        else:
+            friend_request.approve=False
+            friend_request.ignore=True
+        db.session.add(friend_request)# @UndefinedVariable  
+        db.session.commit()# @UndefinedVariable              
     else:
-        return  "Error: validation"
+        return  "Error: No Friend Request"
     return "Success"
 
     

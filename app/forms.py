@@ -102,7 +102,7 @@ class FriendRequestForm(Form):
 class FriendApproveForm(Form):
     requester_id = IntegerField('requester_id')
     requested_id = IntegerField('requested_id')
-    action = BooleanField('approve')
+    #action = BooleanField('approve')
 
 class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])
