@@ -182,19 +182,16 @@ def user_page(username):
         return redirect(url_for('index'))
     
     
-@app.route('/add_friend', methods=['GET', 'POST'])
+@app.route('/add_friend', methods=['POST'])
 def add_friend():  
     form = FriendRequestForm()
     if form.validate_on_submit():
         if request.method =='POST':
-            requester=request.form['requester_id']
-            requested=request.form['requested_id']
-        else:
-            requester=request.args['requester_id']
-            requested=request.args['requested_id']
-        count = FriendRequest.query.filter_by(requester_user_id=requester, requested_user_id=requested).count()# @UndefinedVariable
+            requester_id =request.form['requester_id']
+            requested_id =request.form['requested_id']
+        count = FriendRequest.query.filter_by(requester_user_id=requester_id, requested_user_id=requested_id).count()# @UndefinedVariable
         if count == 0:
-            friend_request = FriendRequest(requester_user_id=requester, requested_user_id=requested)
+            friend_request = FriendRequest(requester_user_id=requester_id, requested_user_id=requested_id)
             try:
                 db.session.add(friend_request)# @UndefinedVariable
                 db.session.commit()# @UndefinedVariable
@@ -202,6 +199,35 @@ def add_friend():
                 return "Error"
     else:
         return  render_template('add_friend_form.html',form=form)
+    return "Success"
+
+@app.route('/approve_friend', methods=['POST'])
+def approve_friend():  
+    form = FriendApproveForm()
+    if form.validate_on_submit():
+        if request.method =='POST':
+            requester_id = request.form['requester_id']
+            requested_id = request.form['requested_id']
+            approve_request = request.form['approve']
+        friend_request = FriendRequest.query.filter_by(requester_user_id=requester, requested_user_id=requested, ignore=False).first()# @UndefinedVariable
+        if friend_request:
+            current_user=User.query.get(requested_id)# @UndefinedVariable
+            if approve_request:
+                user = User.query.get(requester_id) # @UndefinedVariable
+                current_user.friends.append(requester_id)
+                user.friends.append(current_user)
+                current_user.friends.append(user)
+                friend_request.approve=True
+                db.session.add(friend_request)# @UndefinedVariable
+                db.session.add(current_user)# @UndefinedVariable
+                db.session.add(user)# @UndefinedVariable
+                db.session.commit()# @UndefinedVariable
+            else:
+                friend_request.approve=False
+                friend_request.ignore=True
+                db.session.commit()# @UndefinedVariable    
+    else:
+        return  "Error: validation"
     return "Success"
 
     
@@ -217,7 +243,7 @@ def user_profile_pic_page(username):
 @app.route('/<username>/<project_id>/edit')
 @login_required
 def edit_project(project_id):
-    project = Project.query.filter_by(id=int(project_id))  # @UndefinedVariable
+    project = Project.query.get(int(project_id))  # @UndefinedVariable
     form = ProjectEditForm()
     if request.method == 'POST' and form.validate_on_submit():
         project.name = form.project_name

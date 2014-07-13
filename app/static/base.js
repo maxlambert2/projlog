@@ -62,4 +62,53 @@ sfHover = function() {
 if (window.attachEvent) window.attachEvent("onload", sfHover);
 
 
+function approveFriendRequest(requester_id, requested_id, approve=true){
+		var button_id = '#approve_'+requester_id.toString();
+
+		$.ajax({
+			url:"/approve_friend",
+			type:"POST",
+			data:{requester_id: requester_id, 
+				requested_id: requested_id ,
+				approve: true
+			},
+				success:function(data)
+				{
+					$(button_id).html("Approved");
+					$(button_id).removeAttr("onclick");
+					$(button_id).addClass("button_disabled");
+				},
+				error:function(jqXHR, textStatus, error){
+					$(button_id).html("Error: "+textStatus+" "+error);
+				}
+			});
+
+return false;
+}
+
+function ignoreFriendRequest(requester_id, requested_id, approve=true){
+		var button_id = '#ignore_'+requester_id.toString();
+
+		$.ajax({
+			url:"/ignore_friend",
+			type:"POST",
+			data:{requester_id: requester_id, 
+				requested_id: requested_id ,
+				approve: true
+			},
+				success:function(data)
+				{
+					$(button_id).html("Ignored");
+					$(button_id).removeAttr("onclick");
+					$(button_id).addClass("button_disabled");
+				},
+				error:function(jqXHR, textStatus, error){
+					$(button_id).html("Error: "+textStatus+" "+error);
+				}
+			});
+
+return false;
+}
+
+
 

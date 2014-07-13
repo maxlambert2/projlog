@@ -238,6 +238,13 @@ label.remember {
 	border-right-style: none;
 }
 
+.button_disabled {
+	background-color: white;
+	color: #328ED9;
+	border:1px solid #328ED9;
+}
+
+
 a.button:focus{
 	border-left-style: 1px solid #99ADEB;
 	border-right-style: 1px solid #99ADEB;

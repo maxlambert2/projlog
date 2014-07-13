@@ -51,7 +51,7 @@ class User(db.Model):
     username = Column(String(30), unique=True)
     email = Column(String(60), unique=True)
     active = Column(Boolean, default=True)
-    privacy = Column(SmallInteger, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
+    is_private = Column(Boolean, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
     pw_hash = Column(String(100))
     first_name = Column(String(30))
     last_name = Column(String(30))

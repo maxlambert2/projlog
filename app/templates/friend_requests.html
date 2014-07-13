@@ -1,6 +1,13 @@
 {% extends "base.html" %}
  {% from "_display_user_macro.html" import display_user %}
 
+
+ {% block javascript %}
+
+
+
+ {% endblock javascript %}
+
 {% block content %}
 
 
@@ -13,7 +20,11 @@
 		</td>
 
 		<td>
-			{{ display_user(user.id) }}
+			<form name="accept_request" action="" method="post"  class="accept_ignore">
+				  {{form.hidden_tag()}}
+				<input type="submit" value="Accept" name="accept" class="button" id="accept_{{user.id}}" onclick="approveFriendRequest({{user.id}}, {{current_user.id}});"  />
+				<input type="submit" value="Ignore" name="ignore" class="button"  id="ignore_{{user.id}}" onclick="ignoreFriendRequest({{user.id}}, {{current_user.id}});" />
+			</form>
 		</td>
 	</tr>
 
