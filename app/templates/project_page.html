@@ -9,7 +9,7 @@
 	<img  src="{{ project.get_pic_url() }}" />
 	<div id="project_page_name">Project {{project.name}} </div>
 	{% if project.created_by == logged_user  %}
-	<a href="{{request.base_url}}?edit=back_pic" id="update_prof_pic">Update Background Picture </a>
+	<a href="{{request.base_url}}/edit_pic" id="update_prof_pic">Update Cover Picture </a>
 	{% endif %}
 </div>
 
