@@ -1,29 +1,40 @@
 {% extends "user_page_base.html" %}
 
-{% block profile_about %}
+{% block profile_summary %}
 
 
 <a href="{{url_for('user_profile_pic_page', username=user.username)}}">	
 <img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
 </a>
 
-<ul id="profile_about">
-<li id="user_profile_name">{{user.get_full_name()}} </li>
-<li class="user_location">{{user.get_location()}}</li>
+
+
+<div id="user_profile_name"> {{user.get_full_name()}}</div>
+<ul id="profile_details">
+<li>Lives in: &nbsp; {{user.get_location()}}</li>
 
 </ul>
 
 {% endblock %}
 
-{% block profile_content %}
-
+{% block page_center %}
+<div class="page_title" > Projects  </div>
+<table class="projects">
 {% for project in projects %}
-<div id="proj_{{loop.index}}">
+<tr id="proj_{{loop.index}}">
+<td class="project_pic">
 	{% if project.has_pic() %}
-	<img class="project_pic" src="{{project.get_pic_url()}}" >
+	<img  src="{{project.get_pic_thumbnail_url()}}" >
 	{% endif %}
+	</td>
+	<td class="project_name">
 <a href="{{project.get_url()}}">{{project.project_name}}</a>
-</div>
+</td>
+<td>
+	<span class="label" > Goal:</span> {{project.goal}}
+</td>
+</tr>
 {% endfor %}
+</table>
 
-{% endblock profile_content %}
+{% endblock %}

@@ -14,14 +14,16 @@
   				<a  href="/my_friends"> Friends </a>
   			</li>
   			<li>
+          <ul class="my_projects">
   				My Projects
-  			</li>
+  	
   			{% for project in projects %}
   			   <li class="project_list">
             <a href="{{project.get_url()}}"> {{project.project_name}} </a>
   			   </li>
   			{% endfor %}
-
+      </ul>
+    </li>
 </ul>
   </div>
 

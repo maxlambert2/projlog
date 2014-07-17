@@ -1,5 +1,5 @@
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import MetaData, Column, String, Boolean, Text, Integer, DateTime, SmallInteger, ForeignKey
+from sqlalchemy import MetaData, Column, String, Boolean, Text, Integer, DateTime, SmallInteger, ForeignKey, Sequence
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from  app import db
@@ -10,7 +10,7 @@ import unicodedata
 import re
 from random import randrange
 import boto
-
+from datetime import datetime, timedelta
 
 #import string
 #import random
@@ -41,17 +41,17 @@ followers = db.Table('followers',  # @UndefinedVariable
 friendships = db.Table('friendships',   # @UndefinedVariable
     db.Column('user_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
     db.Column('friend_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    created_date = Column(DateTime, default=datetime.now)
 )
 
 class User(db.Model):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    created_date = Column(DateTime, default=datetime.now)
     username = Column(String(30), unique=True)
     email = Column(String(60), unique=True)
     active = Column(Boolean, default=True)
-    is_private = Column(Boolean, default=False)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
+    privacy = Column(Integer, default=0)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
     pw_hash = Column(String(100))
     first_name = Column(String(30))
     last_name = Column(String(30))
@@ -72,8 +72,9 @@ class User(db.Model):
         backref = backref('friendships', lazy = 'dynamic'),
         lazy='dynamic'
         )
+
     
-    projects = relationship('Project')
+    projects = relationship('Project', backref='created_by')
     
 
     def __init__(self, username, email,password):
@@ -103,7 +104,7 @@ class User(db.Model):
             return self.location
     
     def has_notifications(self):
-        return Notification.query.filter_by(user_id=self.id,seen=False).first() is not None
+        return Notification.query.filter_by(user_id=self.id,seen=False).count() > 0
     
     def notification_count(self):
         return Notification.query.filter_by(user_id=self.id,seen=False).count()
@@ -126,36 +127,28 @@ class User(db.Model):
         if self.profile_pic_id is None:
             self.profile_pic_id = generate_filename(self.username, ext=file_ext)
         return self.profile_pic_id
-    
-    def get_profile_pic_url(self):
-        return self.get_profile_pic_large_url()
                 
-    def get_profile_pic_large_url(self):
+    def get_profile_pic_url(self,size='large'):
         if self.profile_pic_id is None:
             file_name = config.DEFAULT_PROFILE_PIC
         else:
-            file_name = 'large-'+self.profile_pic_id
+            file_name = size+'/'+self.profile_pic_id
             return get_s3_url(file_name)
 
     def get_thumbnail_url(self):
-        if self.profile_pic_id is None:
-            thumbnail_id = config.DEFAULT_THUMBNAIL
-        else:
-            thumbnail_id = 'thumbnail-'+self.profile_pic_id
-        return get_s3_url(thumbnail_id)
+        return self.get_profile_pic_url(size='thumbnail')
     
     def get_profile_pic_medium_url(self):
-        if self.profile_pic_id is None:
-            pic_id = config.DEFAULT_PROFILE_PIC_MED
-        else:
-            pic_id = 'medium-'+self.profile_pic_id
-        return get_s3_url(pic_id)
+        return self.get_profile_pic_url(size='medium')
+    
+    def get_profile_pic_large_url(self):
+        return self.get_profile_pic_url(size='large')
     
     def set_profile_pic(self, filepath, file_ext=config.DEFAULT_IMG_EXT):
         conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
         bucket=conn.get_bucket(config.AWS_S3_BUCKET)
         profile_pic_id = self.get_profile_pic_id(file_ext=file_ext)
-        for size, dim in config.PROFILE_PIC_SIZE.iteritems():  
+        for size, dim in config.PROFILE_PIC_SIZES.iteritems():  
             pic = resize_and_crop(filepath, dim)
             pic_id = size.lower()+'-'+profile_pic_id
             key_pic = bucket.new_key(pic_id)
@@ -252,11 +245,10 @@ class User(db.Model):
 
 class Project(db.Model):
     __tablename__ = 'project'
-    id = Column(Integer, primary_key=True)
-    id_str = Column(String(10), index=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    id = Column(Integer, Sequence('proj_id_seq', start=20000), primary_key=True)
+    created_date = Column(DateTime, default=datetime.now)
     privacy_mode = Column(SmallInteger, default=0)
-    created_by = Column(Integer, ForeignKey('user.id'), index=True)
+    created_by_id = Column(Integer, ForeignKey('user.id'), index=True)
     project_name = Column(String(50))
     goal = Column(String(200))
     slug = Column(String(30))
@@ -278,11 +270,9 @@ class Project(db.Model):
             return False
         else:
             return True
-
-    def get_id_str(self):
-        id_str = str(base36encode(500000+ self.id *3 + randrange(1,3)))
-        self.id_str=id_str
-        return id_str
+    
+    def is_viewable_by(self, user_id):
+        return True
     
     def get_slug(self):
         _slugify_strip_re = re.compile(r'[^\w\s-]')
@@ -301,10 +291,7 @@ class Project(db.Model):
         if self.slug is None or len(self.slug.strip())==0:
             self.get_slug()
             updated+=1
-        if self.id_str is None:
-            self.get_id_str()
-            updated+=1
-        path = '/project/'+str(self.id_str)+'/'+self.slug+'/'
+        path = '/project/'+str(self.id)+'/'+self.slug
         project_url = config.ROOT_URL+path
         if updated > 0:
             try:
@@ -315,19 +302,18 @@ class Project(db.Model):
         return project_url
     
     def get_edit_url(self):
-        edit_url = self.get_url()+'edit'
+        edit_url = self.get_url()+'/edit'
         return edit_url
     
-    def get_pic_url(self):
+    def get_pic_url(self,size='large'):
         if self.pic_id is None:
             return None
         else:
-            file_name = self.pic_id
-            return get_s3_url(file_name)
+            path = size+'/'+self.pic_id
+            return get_s3_url(path)
     
-    def get_thumbnail_url(self):
-        file_name = self.thumbnail_id
-        return get_s3_url(file_name)
+    def get_pic_thumbnail_url(self):
+        return self.get_pic_url('thumbnail')
     
 class ProjectMember(db.Model):
     __tablename__ = 'project_member'
@@ -338,7 +324,7 @@ class ProjectMember(db.Model):
 
 class Notification(db.Model):
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    created_date = Column(DateTime, default=datetime.now)
     user_id =  Column(Integer, ForeignKey('user.id'), index=True)
     message = Column(String(100))
     link = Column(String(100))
@@ -349,6 +335,9 @@ class Notification(db.Model):
         self.user_id=user_id
         self.link=link
         
+    def get_link(self):
+        return self.link+"?nid="+str(self.id)
+        
 class NotificationMixin(object):
     def __init__(self,user_id, msg, link):
         notif = Notification(user_id=user_id, message =msg,link=link)
@@ -358,42 +347,55 @@ class NotificationMixin(object):
 class FriendRequest(NotificationMixin, db.Model):
     __tablename__ = 'friend_request'
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
-    requester_user_id = Column(Integer, ForeignKey('user.id'))
-    requested_user_id = Column(Integer, ForeignKey('user.id'), index=True)
+    created_date = Column(DateTime, default=datetime.now)
+    requester_id = Column(Integer, ForeignKey('user.id'))
+    requested_id = Column(Integer, ForeignKey('user.id'), index=True)
     approved = Column(Boolean, default=False)
-    ignore = Column(Boolean, default=False)
-    
+    ignored = Column(Boolean, default=False)
+    requester = relationship('User', foreign_keys=[requester_id])
+                            
+
     def __init__(self,requester_user_id, requested_user_id):
         requester = User.query.get(requester_user_id)
         msg = requester.get_full_name()+" sent you a friend request"
         link = "/friend_requests"
         super(FriendRequest,self).__init__(user_id=requested_user_id, msg=msg,link=link)
-        self.requester_user_id = requester_user_id
-        self.requested_user_id = requested_user_id
+        self.requester_id = requester_user_id
+        self.requested_id = requested_user_id
             
 class Post(db.Model):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    created_date = Column(DateTime, default=datetime.now)
     created_by =  Column(Integer, ForeignKey('user.id'))
     project = Column(Integer, ForeignKey('project.id'), index=True)
     text = Column(Text())
-    pic_id = Column(String(100))
+    pic_id = Column(String(50))
     comments = relationship('PostComment',  lazy='dynamic')
     likes = relationship('PostLike', lazy='dynamic')
     
-    def get_pic_url(self):
+    def get_pic_url(self,size='large'):
         if self.pic_id is None:
             return None
+        path = size+self.pic_id
+        return get_s3_url(path)
+    
+    def get_created_date_str(self):
+        diff = datetime.now()-self.created_date
+        if diff.days > 10:
+            return self.created_date.strftime("%B %d, %Y")
+        if diff.days > 1:
+            return str(diff.days)+' days ago'
+        elif diff.hours > 1:
+            return str(diff.hours)+ ' hours ago'
         else:
-            file_name = self.pic_id
-            return get_s3_url(file_name)
+            return str(diff.minutes)+ ' minutes ago'
+            
     
 class PostComment(NotificationMixin, db.Model):
     __tablename__ = 'post_comment'
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.now)
+    created_date = Column(DateTime, default=datetime.now)
     post = Column(Integer, ForeignKey('post.id'), index=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     text = Column(Text())

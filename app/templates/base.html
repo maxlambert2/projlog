@@ -41,7 +41,7 @@
 			 	<ul id="notif_dropdown" class="dropdown">
 				 	{% for notif in current_user.get_notifications() %}
 				 		<li >
-				 			<a href="{{notif.link}}" onclick="viewNotification()"><span>{{notif.message}}</span></a>
+				 			<a href="{{notif.get_link()}}" ><span>{{notif.message}}</span></a>
 				 		</li>
 
 			 		{% endfor %}

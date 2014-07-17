@@ -4,20 +4,19 @@
 
 {% block center_column %}
 
-    <div id="create_post">
+    <div class="create_post">
 
       {% if projects %}
-      <form action = "{{root_url}}/post" >
         <table>
           <tr>
             <td>
-      <input id="create_post " type="submit" value="New Post" class="button" /> 
+      <a id="create_post" class="button" onclick="newPost();" href="/post" />New Post</a>
     </td>
     <td>  
     for project: &nbsp;
     </td>
     <td>
-        <select name="projects">
+        <select name="projects" id="post_project">
             {% for project in projects %}
             <option value="{{project.id}}">{{project.project_name}}</option>
             {% endfor %}

@@ -1,12 +1,13 @@
 from app import app, db, login_manager
 from sqlalchemy.sql.expression import insert
 import os
+from functools import wraps
 from forms import *
 from flask import render_template, flash, redirect , Flask, url_for, request, g, session
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from models import  FriendRequest, friendships
+from models import  FriendRequest, friendships, Notification, Post, Project
 import config
 from file_lib import *
 import time, base64, urllib, json, hmac
@@ -17,6 +18,20 @@ from PIL import Image
 from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
 
+
+def notification_viewed(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'nid' in request.args:
+            nid = request.args.get('nid')
+            notif = db.session.query(Notification).get(nid) # @UndefinedVariable
+            if not notif.seen:
+                notif.seen=True
+                db.session.add(notif)# @UndefinedVariable
+                db.session.commit()# @UndefinedVariable
+        return f(*args, **kwargs)
+    return decorated_function
+        
 
 @app.route('/sign_s3_upload/')
 def sign_s3():
@@ -112,7 +127,7 @@ def signup():
     return render_template('signup.html', signup_form=form)
 
 
-@app.route('/edit_profile', methods=['POST'])
+@app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile(status=None):
     user=current_user
@@ -131,22 +146,20 @@ def edit_profile(status=None):
             user.gender = form.gender.data
             user.about = form.about.data
             user.privacy = form.privacy.data
-            user.is_pr
             file = request.files['profile_pic']
             filename = secure_filename(file.filename)
             if file and allowed_file(filename):
                 (file_id, file_extension) = os.path.splitext(filename)
-                #if picture_file: 
                 filename = user.get_profile_pic_filename(file_extension)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
                 file.save(filepath)
                 #user.set_profile_pic(filepath)
                 conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
                 bucket=conn.get_bucket(config.AWS_S3_BUCKET)
-                for size, dims in config.PROFILE_PIC_SIZE.iteritems():
+                for size, dims in config.PROFILE_PIC_SIZES.iteritems():
                     pic = resize_and_crop(filepath, dims)
-                    pic_filename=size.lower()+'-'+filename
-                #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+                    #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+                    pic_filename=size.lower()+'/'+filename
                     key_pic = bucket.new_key(pic_filename)
                     key_pic.set_contents_from_file(pic)  
                     key_pic.set_acl('public-read')
@@ -179,12 +192,10 @@ def user_page(username):
         if user.is_viewable_by(current_user.id):
             projects = Project.query.filter_by(created_by=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
             return render_template('user_page.html', user=user, projects=projects)
-        else:
-            request_sent=False
-            fr_count = FriendRequest.query.filter_by(requester_user_id=current_user.id, requested_user_id=user.id).count()# @UndefinedVariable
-            if fr_count > 0:
-                request_sent=True
-            return render_template('user_page_private.html', user=user, request_sent=request_sent)
+        else: 
+            request_sent = FriendRequest.query.filter_by(requester_id=current_user.id, requested_id=user.id).count() > 0 # @UndefinedVariable
+            request_received = FriendRequest.query.filter_by(requester_id=user.id, requested_id=current_user.id).count() > 0 # @UndefinedVariable
+            return render_template('user_page_private.html', user=user, request_sent=request_sent,request_received=request_received)
     else:
         return redirect(url_for('index'))
     
@@ -196,10 +207,10 @@ def add_friend():
         if request.method =='POST':
             requester_id =request.form['requester_id']
             requested_id =request.form['requested_id']
-        count = FriendRequest.query.filter_by(requester_user_id=requester_id, requested_user_id=requested_id).count()# @UndefinedVariable
-        count_reverse = FriendRequest.query.filter_by(requester_user_id=requested_id, requested_user_id=requester_id).count()# @UndefinedVariable
+        count = FriendRequest.query.filter_by(requester_id=requester_id, requested_id=requested_id).count()# @UndefinedVariable
+        count_reverse = FriendRequest.query.filter_by(requester_id=requested_id, requested_id=requester_id).count()# @UndefinedVariable
         if count+count_reverse == 0:
-            friend_request = FriendRequest(requester_user_id=requester_id, requested_user_id=requested_id)
+            friend_request = FriendRequest(requester_id=requester_id, requested_id=requested_id)
             try:
                 db.session.add(friend_request)# @UndefinedVariable
                 db.session.commit()# @UndefinedVariable
@@ -209,36 +220,46 @@ def add_friend():
         return  render_template('add_friend_form.html',form=form)
     return "Success"
 
-#@csrf.exempt
 @app.route('/approve_friend', methods=['GET', 'POST'])
 def approve_friend():  
-#     form = FriendApproveForm()
-#     if form.validate_on_submit():
-#         #if request.method =='POST':
-#         requester_id = form.requester_id.data
-#         requested_id = form.requested_id.data
-#     else:
-    requester_id = request.args['requester']
-    requested_id = request.args['requested']
-    approve_request = True#request.form['approve']
-    friend_request = FriendRequest.query.filter_by(requester_user_id=requester_id, requested_user_id=requested_id, ignore=False).first()# @UndefinedVariable
-    if friend_request:
-        if approve_request:
-            ins1=friendships.insert().values(user_id=requester_id, friend_id=requested_id)# @UndefinedVariable
-            ins2=friendships.insert().values(user_id=requested_id, friend_id=requester_id)# @UndefinedVariable
-            db.engine.execute(ins1) #@UndefinedVariable
-            db.engine.execute(ins2) #@UndefinedVariable
-            friend_request.approve=True
+    form = FriendApproveForm()
+    if request.method =='POST' and form.validate_on_submit():
+        requester_id = int(form.requester_id.data)
+        requested_id = int(form.requested_id.data)
+        approve_request = form.approve.data
+        friend_request = FriendRequest.query.filter_by(requester_id=requester_id, requested_id=requested_id, ignored=False).first()# @UndefinedVariable
+        if friend_request:
+            if approve_request:
+                ins1=friendships.insert().values(user_id=requester_id, friend_id=requested_id)# @UndefinedVariable
+                ins2=friendships.insert().values(user_id=requested_id, friend_id=requester_id)# @UndefinedVariable
+                db.engine.execute(ins1) #@UndefinedVariable
+                db.engine.execute(ins2) #@UndefinedVariable
+                friend_request.approved=True
+            else:
+                friend_request.approved=False
+                friend_request.ignored=True
+            db.session.add(friend_request)# @UndefinedVariable  
+            db.session.commit()# @UndefinedVariable                 
         else:
-            friend_request.approve=False
-            friend_request.ignore=True
-        db.session.add(friend_request)# @UndefinedVariable  
-        db.session.commit()# @UndefinedVariable              
-    else:
-        return  "Error: No Friend Request"
+            return  "Error: No Friend Request"
+    #else:
+#     requester_id = request.args['requested_id']
+#     requested_id = request.args['requested_id']
+#     approve_request = True#request.form['approve']
     return "Success"
 
+
+@app.route('/friend_requests')
+@login_required
+@notification_viewed
+def friend_requests():
+    requests = FriendRequest.query.filter_by(requested_id=current_user.id, approved=False,ignored=False).limit(10)# @UndefinedVariable
     
+    return render_template('friend_requests.html',friend_requests=requests)
+    
+
+
+
 @app.route('/user/<username>/profile_pic/')
 @login_required
 def user_profile_pic_page(username):   
@@ -247,13 +268,54 @@ def user_profile_pic_page(username):
         return render_template('user_profile_pic.html', user=user)
     else:
         redirect(url_for('index'))
-
-@app.route('/<username>/<project_id>/edit')
+        
+        
+        
+@app.route('/post', methods=['GET', 'POST'])      
+def post():
+    form = PostForm()
+    if request.method =='POST' and form.validate_on_submit():
+        project_id = int(form.project_id)
+        project = Project.query.get(project_id) # @UndefinedVariable
+        if current_user.id == project.created_by:
+            post = Post(created_by=current_user.id,
+                        project=project.id,
+                        text=form.text
+                        )
+            file = request.files['project_id']
+            if file:
+                filename = secure_filename(file.filename)
+                (file_id, file_extension) = os.path.splitext(filename)
+                filename = generate_filename(file_extension)
+                post.pic_id=filename
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
+                file.save(filepath)
+                #user.set_profile_pic(filepath)
+                conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+                bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+                for size, dims in config.POST_PIC_SIZE.iteritems():
+                    pic = resize_and_crop(filepath, dims)
+                    #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+                    pic_filename=size.lower()+'/'+filename
+                    key_pic = bucket.new_key(pic_filename)
+                    key_pic.set_contents_from_file(pic)  
+                    key_pic.set_acl('public-read')
+                os.remove(filepath) 
+            else:
+                return "no file"        
+            db.session.add(post)  # @UndefinedVariable
+            db.session.commit()  # @UndefinedVariable
+        else:
+            redirect(url_for('index'))
+    return render_template('post.html',form=form)
+            
+        
+@app.route('/project/<project_id>/<slug>/edit')
 @login_required
 def edit_project(project_id):
     project = Project.query.get(int(project_id))  # @UndefinedVariable
     form = ProjectEditForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == 'POST' and project.created_by == current_user.id and form.validate_on_submit() :
         project.name = form.project_name
         project.goal = form.goal
         project.privacy_mode = form.privacy
@@ -281,10 +343,12 @@ def create_project():
     
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
-@app.route('/project/<project_id_str>/<slug>/')
-def project_page(project_id_str, slug):
-    project = Project.query.filter_by(id_str=project_id_str).first()  # @UndefinedVariable
-    return render_template('project_page.html', project=project,  root_url=config.ROOT_URL)
+@app.route('/project/<project_id>/<slug>/')
+@login_required
+def project_page(project_id, slug):
+    project = Project.query.get(project_id) # @UndefinedVariable
+    viewable=project.is_viewable_by(current_user.id)
+    return render_template('project_page.html', project=project,  viewable=viewable)
 
 
 @app.route('/follow/<username>')

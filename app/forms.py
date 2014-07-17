@@ -1,4 +1,4 @@
-from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField, IntegerField, ValidationError
+from wtforms import TextField, TextAreaField, BooleanField, PasswordField, FileField, SelectField, IntegerField, ValidationError, HiddenField
 from wtforms.validators import Required, Length, regexp
 from models import User, Project
 from flask_wtf import Form
@@ -88,12 +88,13 @@ class ProjectEditForm(Form):
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only')], 
                                   validators = Required())
-    picture = FileField(u'Project Picture', [regexp(u'^.*\.(jpg|JPG)$')])
+    picture = FileField(u'Project Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
     
     
 class PostForm(Form):
-    comments = TextAreaField('Comments',validators = [Required()])
-    picture = FileField(u'Picture', [regexp(u'^.*\.(jpg|JPG)$')])
+    project_id = HiddenField('project_id')
+    text = TextAreaField('Comments',validators = [Required()])
+    picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
     
 class FriendRequestForm(Form):
     requester_id = IntegerField('requester_id')
@@ -102,7 +103,7 @@ class FriendRequestForm(Form):
 class FriendApproveForm(Form):
     requester_id = IntegerField('requester_id')
     requested_id = IntegerField('requested_id')
-    #action = BooleanField('approve')
+    approve = BooleanField('approve')
 
 class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])

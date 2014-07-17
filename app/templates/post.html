@@ -1,0 +1,27 @@
+{% extends "index.html" %}
+
+
+
+{% block center_column %}
+    <div class="create_post">
+
+<form> 
+    	New Post for Project &nbsp;
+        <select name="projects" id="post_project">
+            {% for project in projects %}
+            <option value="{{project.id}}">{{project.project_name}}</option>
+            {% endfor %}
+        </select>
+
+      </form>
+      {% else %}
+
+        You have not created a project yet. <a href="/create_project" class="button center"> Create Project  </a>
+
+      {% endif %}
+
+
+    </div>
+
+
+{% endblock %}

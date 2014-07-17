@@ -1,6 +1,6 @@
 {% macro display_user(user) %}
-<div class="user_display"> 
-		<a href="{{user.get_profile_url}}"><img class="thumbnail" src="{{user.get_thumbail_url}}" /></a>
-		<a class="user_name" href="{{user.get_profile_url}}">{{user.get_full_name}}</a>
+<div class="thumbnail"> 
+		<a href="{{user.get_profile_url()}}"><img src="{{user.get_thumbnail_url()}}" /></a>
+		<a class="user_name" href="{{user.get_profile_url()}}">{{user.get_full_name()}}</a>
 </div>
 {% endmacro %}

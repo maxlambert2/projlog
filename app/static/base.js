@@ -62,7 +62,7 @@ sfHover = function() {
 if (window.attachEvent) window.attachEvent("onload", sfHover);
 
 
-function approveFriendRequest(requester_id, requested_id, approve=true){
+function approveFriendRequest(requester_id, requested_id){
 		var button_id = '#approve_'+requester_id.toString();
 
 		$.ajax({
@@ -86,7 +86,7 @@ function approveFriendRequest(requester_id, requested_id, approve=true){
 return false;
 }
 
-function ignoreFriendRequest(requester_id, requested_id, approve=true){
+function ignoreFriendRequest(requester_id, requested_id){
 		var button_id = '#ignore_'+requester_id.toString();
 
 		$.ajax({
@@ -94,7 +94,7 @@ function ignoreFriendRequest(requester_id, requested_id, approve=true){
 			type:"POST",
 			data:{requester_id: requester_id, 
 				requested_id: requested_id ,
-				approve: true
+				approve: false
 			},
 				success:function(data)
 				{
@@ -110,5 +110,11 @@ function ignoreFriendRequest(requester_id, requested_id, approve=true){
 return false;
 }
 
+function newPost(){
+	var project = $(#post_project).val();
+	var path = "/post?pid="+project;
+	window.location.href = window.location.hostname+path;
+	return true;
+}
 
 

@@ -39,7 +39,7 @@ text-decoration: none !important;
 
 body { 
 	background:#fff none repeat scroll 0%; 
-	font: 14px  "Myriad Pro", helvetica, verdana,arial,sans-serif;
+	font: 14px  "Lucida Grande", helvetica, verdana,arial,sans-serif;
 	font-style:normal;
 	color:black;
 	margin:0px;
@@ -107,22 +107,42 @@ font-style: bold;
 }
 
 #leftcolumn {
-width:200px;
+width:179px;
 float:left;
-height:100%;
-padding:10px;
+min-height:500px;
+padding: 10px;
+border-right: 1px solid #DADADA;
+text-align: left;
+margin: 0;
 }
 
 #centercolumn {
 width:600px;
-margin-left: 150px;
-padding: 10px;
-height: 100%;
+margin-left: 200px;
+min-height: 600px;
+text-align: center;
+padding:10px;
+}
+
+#profile_center{
+	width: 600px;
+	margin-left: 310px;
+	text-align: center;
+	padding: 20px;
 }
 
 #rightcolumn {
 
 float:right;
+}
+
+img.project_pic{
+	padding: 10px;
+	float:left;
+}
+
+.label {
+	font-weight: bold;
 }
 
 #logo{
@@ -132,6 +152,32 @@ float:right;
 	margin-left: 2px;
 	padding: 0;
 }
+table.projects {
+	width: 700px;
+	font-size: 14px;
+	text-align: left;
+	border: none;
+}
+
+table.projects tr {
+	height:70px;
+	background-color: #F6F6F6;
+	border-top: 1px solid white;
+}
+
+table.projects tr td {
+	padding-left: 10px;
+	border-top: 10px solid white;
+}
+
+table.projects tr td.project_name {
+	width: 130px;
+}
+
+table.projects tr td.project_pic {
+	width: 60px;
+}
+
 
 
 div#nopagefound {
@@ -158,9 +204,18 @@ div#login_box {
 	height: 600px;
 }
 
-li.project_list{
+ul.my_projects {
+
+}
+
+
+
+ul.my_projects li.project_list{
 	margin-left: 1em;
 	font-size: 12px;
+	margin-top: 6px;
+	margin-bottom: 0;
+	padding:0;
 }
 
 #preview_img {
@@ -183,7 +238,7 @@ input,textarea, select  {
 	color:black;
 	text-align:left;
 	font-style: bold;
-	font-size:14px;
+	font-size:13px;
 	border: none;
 	outline: none;
 	border-radius: 4px;
@@ -257,7 +312,6 @@ form {
 	margin:10px;
 	border-style: none;
 	margin: 0;
-	font-size: 16px;
 }
 
 
@@ -266,6 +320,7 @@ form.front_page {
 	-moz-border-radius: 12px;
 	-webkit-border-radius: 12px;
 	border-radius: 12px;
+	font-size: 16px;
 }
 
 @media print {
@@ -312,6 +367,7 @@ legend{
 	font-style: bold;
 	padding: 10px;
 }
+
 
 #preview_profile_pic{
 	width:350px;
@@ -389,6 +445,10 @@ input#signup_button {
 	border-color:#0A4230;
 }
 
+.create_post {
+	font-size: 13px;
+	padding-left: 30px;
+}
 
 
 
@@ -428,7 +488,8 @@ input:not([type="submit"]):focus{
 
 
 ul.leftbar {
-	padding: 5px;
+	padding: 10px;
+	font-size: 13px;
 }
 
 ul.leftbar li {
@@ -436,8 +497,27 @@ ul.leftbar li {
 }
 
 .blue_background {
-	background:#
-	CCE0FF;
+	background:#CCE0FF;
+}
+
+#profile_summary{
+width:200px;
+float:left;
+min-height:500px;
+padding: 10px;
+text-align: center;
+margin: 0;
+border: none;
+margin:10px;
+background-color: #EFF5FF;
+}
+
+#profile_pic {
+	margin-bottom: 10px;
+}
+
+#profile_details{
+	text-align: left;
 }
 
 .filename {
@@ -463,28 +543,39 @@ a.button:hover{
 
 div.clearfloats {clear:both;}
 
-ul#profile_about {
-	width: 150px;
+#profile_summary {
+	width: 280px;
 	margin: 0 auto;
-	padding: 0;
+	padding: 15px;
 	text-align: center;
 vertical-align: middle;
 display: block;
 }
 
-#profile_about li {
+#profile_details {
+	padding: 10px;
+}
+
+#profile_details li {
 line-height: 18px;
-border-bottom: 1px solid #F2F2F2;
 width: 100%;
-text-align: center;
+text-align: left;
 vertical-align: middle;
+font-size: 14px;
 }
 
 #user_profile_name{
 	font-size: 16px;
 	font-weight: bold;
-	padding: 5px;
+	text-align: center;
+	width: 100%;
+	margin-bottom: 10px;
+}
 
+.page_title {
+	width: 100%;
+	font-size: 15px;
+	padding-bottom: 10px;
 }
 
 #notif_flag{
@@ -509,7 +600,6 @@ vertical-align: middle;
 
 
 #nav{
-	margin-top: 5px;
 	font-weight: bold;
 	height:20px;
 	padding: 5px;
@@ -597,8 +687,6 @@ div#toolbar {
 	left: auto;
 }
 
-#nav 
-
 .submit_cancel_buttons {
 	width:150px;
 	padding:10px;
@@ -657,6 +745,19 @@ a.cancel_button{
 div.choices {
 	font-size:0.8em;
 	display:block;
+}
+
+.thumbnail{
+	padding:10px;
+	vertical-align: middle;
+}
+
+.thumbnail img{
+	padding:10px;
+}
+.thumbnail .user_name {
+	display: block;
+	text-align: center;
 }
 
 .userpage_name {
