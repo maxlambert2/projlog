@@ -221,11 +221,10 @@ ul.my_projects li.project_list{
 	padding:0;
 }
 
-#preview_img {
-	width:300px;
-	height: 300px;
+#preview_img{
+	width: 300px;
+	height: auto;
 }
-
 
 ul , dl{
 	list-style-type: none;
@@ -303,11 +302,6 @@ label.remember {
 }
 
 
-a.button:focus{
-	border-left-style: 1px solid #99ADEB;
-	border-right-style: 1px solid #99ADEB;
-}
-
 
 
 form {
@@ -373,7 +367,7 @@ legend{
 
 
 #preview_profile_pic{
-	height:300px;
+	width:300px;
 	text-align: center;
 	padding: 10px;
 	clear:both;
@@ -391,7 +385,7 @@ legend{
 	font-weight: bold;
 	font-size: 18px;
 	margin-left: 100px;
-	margin-top: 200px;
+	margin-top: 200px; 
 }
 
 #proj_back_pic {
@@ -429,7 +423,7 @@ form ul li {
 	list-style-type: none;
 	padding: 5px;
 	vertical-align:center;
-	width: 100%;
+	width: 50%;
 	clear:both;
 	font-size: 16px;
 	/*background-color: red;*/
@@ -454,9 +448,9 @@ form ul.errors li {
 
 .save_cancel_box {
 	width:200px;
-	padding-top:20px;
-	padding-left: 70px;
+	padding-top:30px;
 	font-size: 14px;
+	margin-left: 200px;
 }
 
 
@@ -498,19 +492,36 @@ input[type="checkbox"] {
 
 input.file-browser , .filename{
 	float:left;
-	margin:  0 0px 0 10px; 
+	margin:  0 ;
 
 }
 
 input[type="file"] {
-	display: none;
+	/*display: none;*/
 }
 
-input:not([type="submit"]):focus{
-	border-width: 3px;
-	margin-top:0px;
+
+.fileInput{
+    cursor: pointer;
+    height: 100%;
+    width: 90px;
+    position:absolute;
+    top: 0;
+    right: 0;
+    z-index: 99;
+    /*Opacity settings for all browsers*/
+    opacity: 0;
+    -moz-opacity: 0;
+    filter:progid:DXImageTransform.Microsoft.Alpha(opacity=0)
 }
 
+
+.inputWrapper {
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    width:80px;
+}
 
 ul.leftbar {
 	padding: 10px;

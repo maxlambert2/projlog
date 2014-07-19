@@ -118,7 +118,7 @@ function newPost(){
 }
 
 
-$('img.preview_img').each(function(i, item) {
+$('#preview_img').change(function(i, item) {
     var img_height = $(item).height();
     var div_height = $(item).parent().height();
     if(img_height<div_height){
@@ -143,13 +143,11 @@ function readURL(input) {
 
 		reader.onload = function(e) {
 			$('#preview_img').attr('src', e.target.result);
-		};
-
+			}
 		reader.readAsDataURL(input.files[0]);
 	}
+	return true;
 }
 
-$('#profile_pic').change(function(){
-	readURL(this);
-});
+
 

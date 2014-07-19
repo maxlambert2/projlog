@@ -2,11 +2,10 @@
 
 {% block javascript %}
 
-<!--<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>-->
+<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>
 <script type="text/javascript" src="/static/s3upload.js"></script>
 
 <script type="text/javascript">
-
 
 $(window).load(function () {
     var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
@@ -16,12 +15,21 @@ $(window).load(function () {
     var intervalFunc = function () {
         $('#file-name').html('File loaded');
     };
+
+  });
+
+
+$(window).load(function () {
+    var intervalFunc = function () {
+        $('#file-name').html('File loaded');
+    };
     $('#browse-profile-pic').on('click', function () { // use .live() for older versions of jQuery
         $('#profile_pic').click();
         setInterval(intervalFunc, 1);
         return false;
     });
 });
+
 
 function s3_upload(){
     var s3upload = new S3Upload({
@@ -34,7 +42,7 @@ function s3_upload(){
         onFinishS3Put: function(url) {
             $('#status').html('Upload completed');
             $("#file_upload_url").val(url);
-            $("#preview_profile_pic").html('<img id="preview_img" src="'+url+'"/>');
+            $("#preview_profile_pic").html('<img src="'+url+'" style="width:300px;" />');
         },
         onError: function(status) {
           console.log()
@@ -58,16 +66,17 @@ function s3_upload(){
        <fieldset>
     <legend > Edit Profile </legend>
   <ul>
-
-
     <li> 
+        <div id="preview_profile_pic"><img id="preview_img" src="" /></div>
 <label for="profile_pic" >Change Profile Picture</label>
-     <input id="profile_pic" name="profile_pic" type="file" /> 
+<div class="inputWrapper button">Browse Files
+     <input id="profile_pic" name="profile_pic" type="file" class="fileInput" onchange="readURL(this);" /> 
+   </div>
 <input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
 <input type="hidden" id="file_name" value="{{file_name}}" />
-  <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/> 
-  <div id="preview_profile_pic"><img id="preview_img" src="#" alt="" /></div>
+
   <p id="status" class="filename"></p>
+
     </li>
 
       {#  {{render_field(form.profile_pic)}}   #}
@@ -79,6 +88,7 @@ function s3_upload(){
 	{{ render_field(form.location) }}
     {{ render_field(form.about) }}
   </ul>
+
   <div class="save_cancel_box">
     <input type="submit" value="Save" class="button"/>
   {% if status == 'first' %}
@@ -86,6 +96,7 @@ function s3_upload(){
  {% else %}
 <a class="cancel_button" href="{{previous_page}}">Cancel</a>
 {% endif %}
+
 
 </div>
 

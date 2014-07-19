@@ -7,6 +7,14 @@
 
 <script type="text/javascript">
 
+$(window).load(function () {
+    var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
+    $("#preview_img").attr("src", pic_src) ;
+
+
+    var intervalFunc = function () {
+        $('#file-name').html('File loaded');
+    };
 
 </script>
 {% endblock javascript %}
@@ -27,7 +35,9 @@
 
     <li> 
 <label for="profile_pic" >Change Profile Picture</label>
+<div class="inputWrapper button">
      <input id="profile_pic" name="profile_pic" type="file" size="20" onchange="s3_upload();"/> 
+   </div>
 <input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
 <input type="hidden" id="file_name" value="{{file_name}}" />
   <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/> 

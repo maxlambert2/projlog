@@ -133,13 +133,19 @@ class User(db.Model):
             file_name = config.DEFAULT_PROFILE_PIC
         else:
             file_name = size+'/'+self.profile_pic_id
-            return get_s3_url(file_name)
+        return get_s3_url(file_name)
 
     def get_thumbnail_url(self):
-        return self.get_profile_pic_url(size='thumbnail')
+        if not self.profile_pic_id:
+            return get_s3_url(config.DEFAULT_THUMBNAIL)
+        else:
+            return self.get_profile_pic_url(size='thumbnail')
     
     def get_profile_pic_medium_url(self):
-        return self.get_profile_pic_url(size='medium')
+        if not self.profile_pic_id:
+            return get_s3_url(config.DEFAULT_PROFILE_PIC_MED)
+        else:
+            return self.get_profile_pic_url(size='medium')
     
     def get_profile_pic_large_url(self):
         return self.get_profile_pic_url(size='large')
