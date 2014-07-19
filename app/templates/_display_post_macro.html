@@ -1,0 +1,14 @@
+{% macro display_post(post) %}
+	<div class="post">
+		{{ display_user( post.created_by) }}
+				<div class="date">{{post.get_created_date_text()}}</div>
+		<div class="post_text">
+			{{post.text}}
+		</div>
+		{% if post.get_pic_url() %}
+			<div>
+				<a href="{{post.get_pic_url(size='large')}}"><img src="{{post.get_pic_url(size='medium')}}"></a>
+			</div>
+		{% endif %}
+	</div>
+{% endmacro %}

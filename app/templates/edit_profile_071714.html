@@ -2,46 +2,11 @@
 
 {% block javascript %}
 
-<!--<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>-->
+<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>
 <script type="text/javascript" src="/static/s3upload.js"></script>
 
 <script type="text/javascript">
 
-
-$(window).load(function () {
-    var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
-    $("#preview_img").attr("src", pic_src) ;
-
-
-    var intervalFunc = function () {
-        $('#file-name').html('File loaded');
-    };
-    $('#browse-profile-pic').on('click', function () { // use .live() for older versions of jQuery
-        $('#profile_pic').click();
-        setInterval(intervalFunc, 1);
-        return false;
-    });
-});
-
-function s3_upload(){
-    var s3upload = new S3Upload({
-        file_dom_selector: 'profile_pic',
-        s3_sign_put_url: '/sign_s3_upload/',
-
-        onProgress: function(percent, message) {
-            $('#status').html('Upload progress: ' + percent + '%' + message);
-        },
-        onFinishS3Put: function(url) {
-            $('#status').html('Upload completed');
-            $("#file_upload_url").val(url);
-            $("#preview_profile_pic").html('<img id="preview_img" src="'+url+'"/>');
-        },
-        onError: function(status) {
-          console.log()
-            $('#status').html('Upload error: ' + status);
-        }
-    });
-}
 
 </script>
 {% endblock javascript %}
@@ -62,11 +27,11 @@ function s3_upload(){
 
     <li> 
 <label for="profile_pic" >Change Profile Picture</label>
-     <input id="profile_pic" name="profile_pic" type="file" /> 
+     <input id="profile_pic" name="profile_pic" type="file" size="20" onchange="s3_upload();"/> 
 <input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
 <input type="hidden" id="file_name" value="{{file_name}}" />
   <input id="browse-profile-pic" type="button" class="button file-browser" value="Browse for files"/> 
-  <div id="preview_profile_pic"><img id="preview_img" src="#" alt="" /></div>
+  <div id="preview_profile_pic"><img id="preview_img" src="" /></div>
   <p id="status" class="filename"></p>
     </li>
 

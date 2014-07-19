@@ -208,6 +208,9 @@ ul.my_projects {
 
 }
 
+#bacground_pic {
+
+}
 
 
 ul.my_projects li.project_list{
@@ -374,6 +377,28 @@ legend{
 	text-align: center;
 	padding: 10px;
 	clear:both;
+}
+
+#background_pic {
+	height: 400px;
+	width: 600px;
+	margin: 0;
+	padding: 0;
+}
+
+#project_page_name{
+	position: absolute;
+	font-weight: bold;
+	font-size: 18px;
+	margin-left: 100px;
+	margin-top: 200px;
+}
+
+#proj_back_pic {
+	height: 100%;
+	width: 100%;
+	z-index: 1;
+
 }
 
 #preview {

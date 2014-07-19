@@ -1,54 +1,50 @@
 {% extends "index.html" %}
-
 {% from "_form_macro.html" import render_field %}
+ {% from "_display_post_macro.html" import display_post %}
 
 {% block center_column %}
 
     <div class="create_post">
 
-      {% if projects %}
-        <table>
-          <tr>
-            <td>
-      <a id="create_post" class="button" onclick="newPost();" href="/post" />New Post</a>
-    </td>
-    <td>  
-    for project: &nbsp;
-    </td>
-    <td>
-        <select name="projects" id="post_project">
-            {% for project in projects %}
-            <option value="{{project.id}}">{{project.project_name}}</option>
-            {% endfor %}
-        </select>
+        {% if projects %}
+          <table>
+            <tr>
+              <td>
+        <a id="create_post" class="button" onclick="newPost();" href="/post" />New Post</a>
       </td>
-    </tr>
-  </table>
-      </form>
-      {% else %}
-
-        You have not created a project yet. <a href="/create_project" class="button center"> Create Project  </a>
-
-      {% endif %}
-
-
+      <td>  
+      for project: &nbsp;
+      </td>
+      <td>
+          <select name="projects" id="post_project">
+              {% for project in projects %}
+              <option value="{{project.id}}">{{project.project_name}}</option>
+              {% endfor %}
+          </select>
+        </td>
+      </tr>
+    </table>
+        </form>
+        {% else %}
+          You have not created a project yet. <a href="/create_project" class="button center"> Create Project  </a>
+        {% endif %}
+    </div>
+    <div class="news_feed">
+      {% for feed_post in feed_list %}
+        {{ display_post(feed_post) }}
+      {% endfor %}
     </div>
 
-
-    {% for feed_post in feed_list %}
-    <div class="feed_item">
-      <div class="story_header">
-      <img class="thumbnail"  url="{{ feed_post.author.get_profile_pic_url() }}"/>
-      <div class="post_user"> {{feed_post.author.username}} </div>
-      <div class="post_text">  {{feed_post.txt}} </div>
-      {% if feed_post.pic_id %}
-      <div class="post_pic">  <img src="{{ feed_post.get_pic_url() }}" /> </div>
-      {% endif %}
-
+    {% if {{next_page}} %}
+      <div class="more_posts">
+            {% if {{last_page}} %}
+              <a href="/?page={{last_page}}" class="page_direction">Last Posts </a>
+            {% endif %}
+        <a href="/?page={{next_page}}" class="page_direction"> Next Posts </a>
+      </div>
+    {% endif %}
     </div>
-    {% endfor %}
 
-  </div>
 
 
 {% endblock %}

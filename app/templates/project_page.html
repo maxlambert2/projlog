@@ -1,40 +1,33 @@
 
 {% extends "base.html" %}
  {% from "_display_user_macro.html" import display_user %}
+ {% from "_display_post_macro.html" import display_post %}
 
 {% block content %}
 
 
 <div id="background_pic">
-	<img  src="{{ project.get_pic_url() }}" />
+	<img id="proj_back_pic" src="{{ project.get_pic_url() }}" />
 	<div id="project_page_name">Project {{project.name}} </div>
-	{% if project.created_by == logged_user  %}
-	<a href="{{request.base_url}}/edit_pic" id="update_prof_pic">Update Cover Picture </a>
-	{% endif %}
 </div>
+<div id="leftcolumn">
+		{% if project.created_by == logged_user  %}
+		<a href="{{request.base_url}}/edit_project" id="edit_project">Edit </a>
+		{% endif %}
 
+	<div id="proj_goal">
+	Goal:	{{project.goal}}
+	</div>
 
-<div id="proj_goal">
-Goal:	{{project.goal}}
-</div>
-
-<div class="created_by">
-	{{ display_user( project.created_by ) }}
-</div>
-{% if logged_user == creator %}
-<a class="project_edit_box" href="{{project.get_edit_url()}}">Edit Project</a>
-{% endif %}
-
-<div class="posts">
-{% for post in posts %}
-<div class="post">
-	{{ display_user( post.created_by) }}
-	<div class="post_text">
-		<div class="date">{{post.get_created_date_text()}}</div>
-		{{post.text}}
+	<div class="created_by">
+	Created by {{ display_user(project.created_by) }}
 	</div>
 </div>
-{% endfor %}
+
+<div class="centercolumn">
+		{% for post in posts %}
+			{{ display_post(post) }}
+		{% endfor %}
 </div>
 
 

@@ -40,4 +40,8 @@ POST_PIC_SIZES ={'large': LARGE_PIC_DIM,
                    'medium': MEDIUM_PIC_DIM}
 
 PROJ_PIC_SIZES = {'large':LARGE_PIC_DIM,
+                  'medium': MEDIUM_PIC_DIM,
                   'thumbnail':THUMBNAIL_DIM }
+
+
+DEFAULT_PIC_SIZE = 'medium'

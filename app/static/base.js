@@ -111,7 +111,7 @@ return false;
 }
 
 function newPost(){
-	var project = $(#post_project).val();
+	var project = $('#post_project').val();
 	var path = "/post?pid="+project;
 	window.location.href = window.location.hostname+path;
 	return true;
@@ -143,7 +143,7 @@ function readURL(input) {
 
 		reader.onload = function(e) {
 			$('#preview_img').attr('src', e.target.result);
-		}
+		};
 
 		reader.readAsDataURL(input.files[0]);
 	}
@@ -151,5 +151,5 @@ function readURL(input) {
 
 $('#profile_pic').change(function(){
 	readURL(this);
-}
+});
 

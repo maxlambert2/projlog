@@ -305,7 +305,7 @@ class Project(db.Model):
         edit_url = self.get_url()+'/edit'
         return edit_url
     
-    def get_pic_url(self,size='large'):
+    def get_pic_url(self,size=config.DEFAULT_PIC_SIZE):
         if self.pic_id is None:
             return None
         else:
