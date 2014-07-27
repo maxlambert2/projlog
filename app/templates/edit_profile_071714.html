@@ -10,12 +10,7 @@
 $(window).load(function () {
     var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
     $("#preview_img").attr("src", pic_src) ;
-
-
-    var intervalFunc = function () {
-        $('#file-name').html('File loaded');
-    };
-
+  });
 </script>
 {% endblock javascript %}
 

@@ -1,33 +1,59 @@
 
 {% extends "base.html" %}
  {% from "_display_user_macro.html" import display_user %}
- {% from "_display_post_macro.html" import display_post %}
+ {% from "_display_post_form.html" import display_post_form %}
 
 {% block content %}
 
 
-<div id="background_pic">
-	<img id="proj_back_pic" src="{{ project.get_pic_url() }}" />
-	<div id="project_page_name">Project {{project.name}} </div>
+<div id="back_pic_container">
+		{% if project.get_pic_url() %}
+			<img id="proj_back_pic" src="{{ project.get_pic_url(size='large') }}" />
+		{% else %}
+			<div id="proj_back_pic" > </div>
+	{% endif %}
+	<div id="project_page_name">Project {{project.project_name}} </div>
 </div>
-<div id="leftcolumn">
-		{% if project.created_by == logged_user  %}
-		<a href="{{request.base_url}}/edit_project" id="edit_project">Edit </a>
-		{% endif %}
+<!-- <div id="proj_content"> -->
+<div id="leftcolumn" class="project">
 
-	<div id="proj_goal">
+	<ul>
+		{% if project.created_by_id == current_user.id %}
+	<li>
+		<a href="edit" class="edit_link">Edit Project</a>
+</li>
+	{% endif %}
+
+		<li>
+	<span style="float:left;padding-top:30px;" > Created by </span> 
+	{{ display_user(project.created_by) }}
+	</li>
+
+		<li>
 	Goal:	{{project.goal}}
-	</div>
-
-	<div class="created_by">
-	Created by {{ display_user(project.created_by) }}
-	</div>
+	</li>
+</ul>
 </div>
 
-<div class="centercolumn">
+<div id="rightcolumn">
+	{% if project.created_by_id == current_user.id %}
+		{{ display_post_form(project.id) }}
+	{% endif %}
+
+
 		{% for post in posts %}
 			{{ display_post(post) }}
 		{% endfor %}
+
+    {% if next_page %}
+      <div class="more_posts">
+            {% if last_page %}
+              <a href="?page={{last_page}}" class="page_direction">Last Posts </a>
+            {% endif %}
+        <a href="?page={{next_page}}" class="page_direction"> Next Posts </a>
+      </div>
+    {% endif %}
+
 </div>
 
 

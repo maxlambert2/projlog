@@ -2,39 +2,39 @@
 
 {% block profile_summary %}
 
-
-<a href="{{url_for('user_profile_pic_page', username=user.username)}}">	
 <img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
-</a>
-
-
 
 <div id="user_profile_name"> {{user.get_full_name()}}</div>
 <ul id="profile_details">
-<li>Lives in: &nbsp; {{user.get_location()}}</li>
+<li>Lives in: {{user.get_location()}}</li>
 
 </ul>
 
 {% endblock %}
 
 {% block page_center %}
+
+{% if projects.count() == 0 %}
+User has not created any projects yet.
+{% else %}
 <div class="page_title" > Projects  </div>
 <table class="projects">
 {% for project in projects %}
-<tr id="proj_{{loop.index}}">
-<td class="project_pic">
+<tr>
+<td >
 	{% if project.has_pic() %}
-	<img  src="{{project.get_pic_thumbnail_url()}}" >
+	<a href="{{project.get_url()}}"><img  class="thumbnail" src="{{project.get_pic_thumbnail_url()}}" /></a>
 	{% endif %}
 	</td>
 	<td class="project_name">
 <a href="{{project.get_url()}}">{{project.project_name}}</a>
 </td>
 <td>
-	<span class="label" > Goal:</span> {{project.goal}}
+	<span class="label"> Goal:&nbsp; </span> {{project.goal}}
 </td>
 </tr>
 {% endfor %}
 </table>
+{% endif %}
 
 {% endblock %}

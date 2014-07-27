@@ -1,20 +1,23 @@
 {% extends "base.html" %}
 {% from "_form_macro.html" import render_field %}
+ {% from "_display_pic_input.html" import render_pic_input %}
 
 
 {% block content %}
 
-<div id="main" class="single_form_page" >
 
-    <form id="create_project" action="/create_project" method="post" name="create_project" >
+{% block form_start %}
+    <form class="project full_page" action="/create_project" method="post" name="create_project" >
+       <fieldset>
+    <legend > Create Project </legend>
+{% endblock %}
+
   {{form.hidden_tag()}}
-     <fieldset id="signup">
-	<div class="error_msg">
-		{{ error_msg }}
-	</div>
+
+  <div id="leftcolumn" class="two_col_layout">
 	<ul>
 {{render_field(form.project_name)}}
-<li>
+<!-- <li>
   <label for="goal">Project Goal</label>
  <input id="goal" name="goal" type="text" value="" tabindex="2" size="60"/>
    {% if form.goal.errors %}
@@ -24,10 +27,13 @@
     {% endfor %}
     </ul>
   {% endif %}
-</li>
-	{{ render_field(form.privacy) }}
+</li> -->
+  {{ render_field(form.privacy) }}
 
-<li>
+	{{ render_field(form.goal) }}
+  {{ render_field(form.comments )}}
+
+<!-- <li>
   <label for="comments">Comments</label>
  <input id="comments" name="comments" type="textarea" value="" tabindex="4" size="60" height=3 />
     {% if form.comments.errors %}
@@ -37,15 +43,22 @@
     {% endfor %}
     </ul>
   {% endif %}
-</li>
-	</ul>
-  <div class="submit_cancel_buttons">
-  <input type="submit" value="Create Project" class="button" />
- <div > <a class="cancel_button" href="{{previous_page}}">Cancel</a>
+</li> -->
+  </ul>
+</div>
+<div id="rightcolumn" class="two_col_layout">
+  {% block additional_fields %}
+{{ render_pic_input("", "Add Project Picture (optional) ") }}
+{% endblock %}
 </div>
  </fieldset>
-  </form>
+   <div class="submit_cancel_buttons">
+    {% block form_submit %}
+  <input type="submit" value="Create Project" class="button" />
+  {% endblock %}
+  <a class="cancel_button" href="{{previous_page}}">Cancel</a>
 </div>
+  </form>
    
   
 {% endblock %}

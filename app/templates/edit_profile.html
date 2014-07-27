@@ -1,106 +1,43 @@
 {% extends "base.html" %}
-
-{% block javascript %}
-
-<script type="text/javascript" src="http://rawgit.com/lodash/lodash/master/dist/lodash.min.js"></script>
-<script type="text/javascript" src="/static/s3upload.js"></script>
-
-<script type="text/javascript">
-
-$(window).load(function () {
-    var pic_src = "{{profile_pic_url}}?" + new Date().getTime();
-    $("#preview_img").attr("src", pic_src) ;
+  {% from "_form_macro.html" import render_field %}
+    {% from "_display_pic_input.html" import render_pic_input %}
 
 
-    var intervalFunc = function () {
-        $('#file-name').html('File loaded');
-    };
-
-  });
-
-
-$(window).load(function () {
-    var intervalFunc = function () {
-        $('#file-name').html('File loaded');
-    };
-    $('#browse-profile-pic').on('click', function () { // use .live() for older versions of jQuery
-        $('#profile_pic').click();
-        setInterval(intervalFunc, 1);
-        return false;
-    });
-});
-
-
-function s3_upload(){
-    var s3upload = new S3Upload({
-        file_dom_selector: 'profile_pic',
-        s3_sign_put_url: '/sign_s3_upload/',
-
-        onProgress: function(percent, message) {
-            $('#status').html('Upload progress: ' + percent + '%' + message);
-        },
-        onFinishS3Put: function(url) {
-            $('#status').html('Upload completed');
-            $("#file_upload_url").val(url);
-            $("#preview_profile_pic").html('<img src="'+url+'" style="width:300px;" />');
-        },
-        onError: function(status) {
-          console.log()
-            $('#status').html('Upload error: ' + status);
-        }
-    });
-}
-
-</script>
-{% endblock javascript %}
 
 {% block content %}
 
-
-    {% from "_form_macro.html" import render_field %}
-
-
-
-    <form action="/edit_profile" method="post" name="edit_profile" enctype=multipart/form-data class="full_page">
-  {{form.hidden_tag()}}
+    <form action="/edit_profile" method="post" name="edit_profile" enctype=multipart/form-data class="full_page" >
+  {{form.hidden_tag()}} 
        <fieldset>
     <legend > Edit Profile </legend>
-  <ul>
-    <li> 
-        <div id="preview_profile_pic"><img id="preview_img" src="" /></div>
-<label for="profile_pic" >Change Profile Picture</label>
-<div class="inputWrapper button">Browse Files
-     <input id="profile_pic" name="profile_pic" type="file" class="fileInput" onchange="readURL(this);" /> 
-   </div>
-<input type="hidden" id="file_upload_url" name="file_upload_url" value="{{profile_pic_url}}" />
-<input type="hidden" id="file_name" value="{{file_name}}" />
+  <div id="leftcolumn" class="two_col_layout">
+    <ul>
 
-  <p id="status" class="filename"></p>
-
-    </li>
-
-      {#  {{render_field(form.profile_pic)}}   #}
         {{ render_field(form.username) }}
         {{ render_field(form.privacy) }}
    {{ render_field(form.first_name) }}
   {{ render_field(form.last_name) }}
     {{ render_field(form.gender) }}
-	{{ render_field(form.location) }}
+  {{ render_field(form.location) }}
     {{ render_field(form.about) }}
   </ul>
-
-  <div class="save_cancel_box">
-    <input type="submit" value="Save" class="button"/>
-  {% if status == 'first' %}
- <a class="cancel_button" href="url_for(create_project)" >Skip</a>
- {% else %}
-<a class="cancel_button" href="{{previous_page}}">Cancel</a>
-{% endif %}
-
+</div>
+<div id="rightcolumn" class="two_col_layout">
+{{ render_pic_input(profile_pic_url, "Change Profile Picture")}}
+</div>
+</fieldset>
+<div id="bottom">
+  <div class="submit_cancel_buttons">
+      <input type="submit" value="Save" class="button"/>
+    {% if status == 'first' %}
+   <a class="cancel_button" href="url_for(create_project)" >Skip</a>
+   {% else %}
+  <a class="cancel_button" href="{{previous_page}}">Cancel</a>
+  {% endif %}
+  </div>
 
 </div>
 
-</fieldset>
   </form>
   
 {% endblock %}

@@ -46,7 +46,7 @@ friendships = db.Table('friendships',   # @UndefinedVariable
 
 class User(db.Model):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Sequence('user_id_seq', start=20000), primary_key=True)
     created_date = Column(DateTime, default=datetime.now)
     username = Column(String(30), unique=True)
     email = Column(String(60), unique=True)
@@ -115,7 +115,7 @@ class User(db.Model):
     def is_viewable_by(self,user_id):
         if self.is_private == False or self.id == user_id:
             return True
-        elif self.friends.filter(friendships.c.user_id == user_id).count() > 0:
+        elif self.friends.filter(friendships.c.friend_id == user_id).count() > 0:
             return True
         else:
             return False
@@ -128,7 +128,7 @@ class User(db.Model):
             self.profile_pic_id = generate_filename(self.username, ext=file_ext)
         return self.profile_pic_id
                 
-    def get_profile_pic_url(self,size='large'):
+    def get_profile_pic_url(self, size=config.DEFAULT_PROFILE_PIC_SIZE):
         if self.profile_pic_id is None:
             file_name = config.DEFAULT_PROFILE_PIC
         else:
@@ -163,7 +163,7 @@ class User(db.Model):
         
         
     def get_full_name(self):
-        if self.first_name is None:
+        if self.first_name is None or self.first_name=='':
             return self.username
         else:
             return self.first_name + ' ' + self.last_name
@@ -251,7 +251,7 @@ class User(db.Model):
 
 class Project(db.Model):
     __tablename__ = 'project'
-    id = Column(Integer, Sequence('proj_id_seq', start=20000), primary_key=True)
+    id = Column(Integer, Sequence('project_id_seq', start=30000), primary_key=True)
     created_date = Column(DateTime, default=datetime.now)
     privacy_mode = Column(SmallInteger, default=0)
     created_by_id = Column(Integer, ForeignKey('user.id'), index=True)
@@ -260,19 +260,17 @@ class Project(db.Model):
     slug = Column(String(30))
     comments=Column(Text)
     pic_id = Column(String(100))
-    thumbnail_id = Column(String(100))
-    description = Column(Text)
     posts = relationship('Post',  lazy = 'dynamic')
     members = relationship('ProjectMember')
     
-    def __init__(self, project_name, goal, created_by, privacy):
+    def __init__(self, project_name, goal, created_by_id, privacy):
         self.project_name=project_name
         self.goal=goal
-        self.created_by = created_by
+        self.created_by_id = created_by_id
         self.privacy_mode=privacy
 
     def has_pic(self):
-        if self.pic_id is None:
+        if self.pic_id is None or self.pic_id == "":
             return False
         else:
             return True
@@ -313,7 +311,7 @@ class Project(db.Model):
     
     def get_pic_url(self,size=config.DEFAULT_PIC_SIZE):
         if self.pic_id is None:
-            return None
+            return ''
         else:
             path = size+'/'+self.pic_id
             return get_s3_url(path)
@@ -332,7 +330,7 @@ class Notification(db.Model):
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.now)
     user_id =  Column(Integer, ForeignKey('user.id'), index=True)
-    message = Column(String(100))
+    message = Column(String(150))
     link = Column(String(100))
     seen = Column(Boolean, default=False)
         
@@ -361,22 +359,22 @@ class FriendRequest(NotificationMixin, db.Model):
     requester = relationship('User', foreign_keys=[requester_id])
                             
 
-    def __init__(self,requester_user_id, requested_user_id):
-        requester = User.query.get(requester_user_id)
+    def __init__(self,requester_id, requested_id):
+        requester = User.query.get(requester_id)
         msg = requester.get_full_name()+" sent you a friend request"
         link = "/friend_requests"
-        super(FriendRequest,self).__init__(user_id=requested_user_id, msg=msg,link=link)
-        self.requester_id = requester_user_id
-        self.requested_id = requested_user_id
+        super(FriendRequest,self).__init__(user_id=requested_id, msg=msg,link=link)
+        self.requester_id = requester_id
+        self.requested_id = requested_id
             
 class Post(db.Model):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.now)
     created_by =  Column(Integer, ForeignKey('user.id'))
-    project = Column(Integer, ForeignKey('project.id'), index=True)
+    project_id = Column(Integer, ForeignKey('project.id'), index=True)
     text = Column(Text())
-    pic_id = Column(String(50))
+    pic_id = Column(String(80))
     comments = relationship('PostComment',  lazy='dynamic')
     likes = relationship('PostLike', lazy='dynamic')
     

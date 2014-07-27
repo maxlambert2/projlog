@@ -1,27 +1,12 @@
 {% extends "base.html" %}
 
 
-	{% block javascript %}  
-
-{% if request_sent %}
-<script type="text/javascript" >
-$(function(){
-	var button_id = '#addFriend'+ {{user.id}};
-$(button_id).html("Friend Request Sent");
-$(button_id).removeAttr("onclick");
-});
-
-</script>
-
-{% endif %}
-
-	 {% endblock javascript %}
 
 {% block content %}
 		<div id="profile_summary">
 			{% block profile_summary %}
 			<img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
-			<div id="user_profile_name">{{user.get_full_name()}}</div>
+			<div id="user_profile_name">{{ user.get_full_name() }}</div>
 			{% endblock %}
 		</div>
 
@@ -29,36 +14,6 @@ $(button_id).removeAttr("onclick");
 
 		{% block page_center %}
 
-
-	{% if request_received %}
-
-	<table>
-	<tr>
-		<td>
-			{{ user.get_full_name() }}  sent you a Friend Request
-		</td>
-		<td>
-				<a  class="button" id="accept_{{request.requester.id}}" onclick="approveFriendRequest({{request.requester.id}}, {{current_user.id}});"  >
-				Accept
-			</a>
-		</td>
-		<td>
-				<a class="button"  id="ignore_{{request.requester.id}}" onclick="ignoreFriendRequest({{request.requester.id}}, {{current_user.id}});" >
-				Ignore
-			</a>
-		</td>
-	</tr>
-</table>
-
-	{% else %}
-
-		This user's profile is private.  
-
-
-		<a class="button add_friend" onclick="addFriend({{current_user.id}},{{user.id}});" id="addFriend{{user.id}}">Send Friend Request</a>
-
-
-	{% endif %}
 		{% endblock %}
 
 </div>

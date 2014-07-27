@@ -54,13 +54,13 @@ class SignupForm(Form):
             
          
     
-class ProjectCreateForm(Form):
-    project_name = TextField('Project Name', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
-    goal = TextField('Goal', validators = [Required(), Length(min=6, max=150)])
-    privacy = SelectField('Privacy Setting', validators = [Required()], 
+class ProjectForm(Form):
+    project_name = TextField('Project Name*', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
+    goal = TextAreaField('Goal*', validators = [Required(), Length(min=6, max=200)])
+    privacy = SelectField('Privacy Setting*', validators = [Required()], 
                                   choices=[('0', 'Public'), 
-                                           ('1', 'Friends Only'),
-                                           ('2', 'Private (Select Friends Only)')]
+                                           ('1', 'Friends Only')]
+                                           ## ('2', 'Private (Select Friends Only)')]
                                   )
     comments = TextAreaField('Comments')
     
@@ -71,30 +71,25 @@ class ProjectCreateForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
-        if hasattr(self,'user') and self.user is not None:
-            user_id=self.user.id
-            proj_name_exists = Project.query.filter_by(created_by=user_id,project_name=self.project_name.data).first()# @UndefinedVariable
+        if hasattr(self,'created_by') and self.created_by is not None:
+            user_id=self.created_by.id
+            proj_name_exists = Project.query.filter_by(created_by_id=user_id,project_name=self.project_name.data).first()# @UndefinedVariable
             if proj_name_exists is not None:
                 self.project_name.errors.append("Project Name already exists")
                 return False
         return True
                 
     
-class ProjectEditForm(Form):
-    name = TextField('Project Name', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
-    goal = TextField('Project Goal', validators = [Required(), Length(min=6, max=150)])
-    comments = TextAreaField('Comments')
-    privacy = SelectField('Privacy Setting*', 
-                                  choices=[('0', 'Public'), 
-                                           ('1', 'Friends Only')], 
-                                  validators = Required())
-    picture = FileField(u'Project Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
-    
-    
 class PostForm(Form):
-    project_id = HiddenField('project_id')
-    text = TextAreaField('Comments',validators = [Required()])
-    picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
+    post_text = TextAreaField('',validators = [Required()])
+#     project = SelectField('Project')
+#     ##picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
+#     
+#     def __init__(self, formdata=None, obj=None, prefix='', user_id=None, **kwargs):
+#         if user_id:
+#             projects = Project.query.filter_by(created_by_id = user_id).limit(config.PROJ_LIST_LIMIT) # @UndefinedVariable
+#             self.project.choices = projects
+#         Form.__init__(self, formdata, obj, prefix, **kwargs)
     
 class FriendRequestForm(Form):
     requester_id = IntegerField('requester_id')
@@ -112,7 +107,7 @@ class ProfileForm(Form):
     #profile_pic = FileField(u'Change Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG|jpeg|JPEG|gif|GIF)$')])
     location = TextField('Location', validators = [Length(max=40)])
     about = TextAreaField('About', validators=[Length(max=300)])
-    privacy = SelectField('Profile Privacy Setting', 
+    privacy = SelectField('Profile Privacy', 
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only')], 
                                   validators = [Required()])

@@ -6,8 +6,8 @@
 
     <div class="create_post">
 
-        {% if projects %}
-          <table>
+        {% if not projects %}
+<!--           <table>
             <tr>
               <td>
         <a id="create_post" class="button" onclick="newPost();" href="/post" />New Post</a>
@@ -25,7 +25,9 @@
       </tr>
     </table>
         </form>
-        {% else %}
+        {% else %} -->
+          
+
           You have not created a project yet. <a href="/create_project" class="button center"> Create Project  </a>
         {% endif %}
     </div>
@@ -35,9 +37,9 @@
       {% endfor %}
     </div>
 
-    {% if {{next_page}} %}
+    {% if next_page %}
       <div class="more_posts">
-            {% if {{last_page}} %}
+            {% if last_page %}
               <a href="/?page={{last_page}}" class="page_direction">Last Posts </a>
             {% endif %}
         <a href="/?page={{next_page}}" class="page_direction"> Next Posts </a>

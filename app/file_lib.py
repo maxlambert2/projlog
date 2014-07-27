@@ -3,6 +3,10 @@ import cStringIO
 import config
 import uuid
 from math import floor
+import boto
+from werkzeug.utils import secure_filename
+import os
+
 
 def get_s3_url(object_name, folder=None):
     if object_name is None or object_name == '':
@@ -13,9 +17,9 @@ def get_s3_url(object_name, folder=None):
         return 'https://s3.amazonaws.com/%s/%s/%s' % (config.AWS_S3_BUCKET, folder, object_name)
         
 
-def allowed_file(filename):
+def allowed_filename_pic(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in config.ALLOWED_PIC_FILE_EXT
            
 # def upload_to_s3(bucket, file, filename):
 #     k = Key(bucket)
@@ -37,7 +41,43 @@ def resize_image(filepath, width=config.PROFILE_PIC_WIDTH):
 
     return resizedImageFile
 
-def resize_and_crop(img_path, size, crop_type='top'):
+
+# def save_picture_s3(local_filepath, s3_filename, sizes):
+#     conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+#     bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+#     for size, dims in sizes.iteritems():
+#         pic = resize_and_crop(local_filepath, dims)
+#         #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+#         pic_filename=size.lower()+'/'+s3_filename
+#         key_pic = bucket.new_key(pic_filename)
+#         key_pic.set_contents_from_file(pic)  
+#         key_pic.set_acl('public-read')
+#     return True
+
+
+# def save_picture_s3(file, s3_filename, sizes):
+def save_picture_s3(file, s3_filename, sizes):
+    local_filepath = os.path.join(config.UPLOAD_FOLDER, s3_filename) 
+    file.save(local_filepath)
+    #save_picture_s3(local_filepath,s3_filename, sizes)
+    conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+    bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+    for size, dims in sizes.iteritems():
+        pic = resize_and_crop(local_filepath, dims)
+        #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+        pic_filename=size.lower()+'/'+s3_filename
+        key_pic = bucket.new_key(pic_filename)
+        key_pic.set_contents_from_file(pic)  
+        key_pic.set_acl('public-read')
+    os.remove(local_filepath) 
+
+
+
+
+
+
+
+def resize_and_crop(img_path, size, crop_type='middle'):
     """
     Resize and crop an image to fit the specified size.
  
@@ -92,13 +132,13 @@ def resize_and_crop(img_path, size, crop_type='top'):
     resizedImage=img
     # Turn back into file-like object
     resizedImageFile = cStringIO.StringIO()
-    resizedImage.save(resizedImageFile , config.DEFAULT_IMG_EXT, optimize = True)
+    resizedImage.save(resizedImageFile , 'PNG', optimize = True)
     resizedImageFile.seek(0)    # So that the next read starts at the beginning
 
     return resizedImageFile
     
-def generate_filename(seed='z',ext=config.DEFAULT_IMG_EXT):
-    return seed+'-'+str(uuid.uuid4())+ext
+def generate_filename(prefix='z',ext=config.DEFAULT_IMG_EXT):
+    return "%s-%s.%s" % (prefix, str(uuid.uuid4()), ext )
     
 def get_crop_size_by_scaleup(cls, input_dimension, scale_dimension):
     """

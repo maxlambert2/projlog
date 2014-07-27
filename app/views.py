@@ -13,7 +13,6 @@ from file_lib import *
 import time, base64, urllib, json, hmac
 from hashlib import sha1
 from werkzeug.utils import secure_filename
-import boto
 from PIL import Image
 from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
@@ -80,9 +79,8 @@ def index():
     if current_user is None or not current_user.is_active():
         return landing_page()
     posts = current_user.posts_followed()
-    user_projects = current_user.projects
-    return render_template('news_feed.html', posts=posts, 
-                           projects=user_projects)
+    user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+    return render_template('news_feed.html', posts=posts,  projects=user_projects)
 
 def landing_page():
     login_form = LoginForm()
@@ -137,8 +135,7 @@ def edit_profile(status=None):
     profile_pic_url = user.get_profile_pic_url()
     
     temp_file_name = user.username
-    if request.method == 'POST':
-        if form.validate_on_submit():
+    if request.method == 'POST' and form.validate_on_submit():
             user.username = form.username.data
             user.first_name = form.first_name.data
             user.last_name = form.last_name.data
@@ -146,30 +143,12 @@ def edit_profile(status=None):
             user.gender = form.gender.data
             user.about = form.about.data
             user.privacy = form.privacy.data
-            file = request.files['profile_pic']
-            filename = secure_filename(file.filename)
-            if file and allowed_file(filename):
-                (file_id, file_extension) = os.path.splitext(filename)
-                filename = user.get_profile_pic_filename(file_extension)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
-                file.save(filepath)
-                #user.set_profile_pic(filepath)
-                conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
-                bucket=conn.get_bucket(config.AWS_S3_BUCKET)
-                for size, dims in config.PROFILE_PIC_SIZES.iteritems():
-                    pic = resize_and_crop(filepath, dims)
-                    #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
-                    pic_filename=size.lower()+'/'+filename
-                    key_pic = bucket.new_key(pic_filename)
-                    key_pic.set_contents_from_file(pic)  
-                    key_pic.set_acl('public-read')
-                os.remove(filepath) 
-            else:
-                return "no file"        
+            file = request.files['picture']
+            if file and allowed_filename_pic(file.filename):
+                s3_filename = user.get_profile_pic_filename()
+                save_picture_s3(file,s3_filename, sizes=config.PROFILE_PIC_SIZES)    
             db.session.add(user)  # @UndefinedVariable
             db.session.commit()  # @UndefinedVariable
-        else:
-            return "form did not validate"
     else:
         form = ProfileForm(username=user.username, 
                            first_name=user.first_name, last_name=user.last_name,
@@ -190,34 +169,34 @@ def user_page(username):
     user = User.query.filter_by(username=username).first()# @UndefinedVariable
     if user is not None:
         if user.is_viewable_by(current_user.id):
-            projects = Project.query.filter_by(created_by=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+            projects = Project.query.filter_by(created_by_id=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
             return render_template('user_page.html', user=user, projects=projects)
         else: 
-            request_sent = FriendRequest.query.filter_by(requester_id=current_user.id, requested_id=user.id).count() > 0 # @UndefinedVariable
-            request_received = FriendRequest.query.filter_by(requester_id=user.id, requested_id=current_user.id).count() > 0 # @UndefinedVariable
+            request_sent = FriendRequest.query.filter_by(requester_id=current_user.id, requested_id=user.id, approved=False, ignored=False).count() > 0 # @UndefinedVariable
+            request_received = FriendRequest.query.filter_by(requester_id=user.id, requested_id=current_user.id, approved=False, ignored=False).count() > 0 # @UndefinedVariable
             return render_template('user_page_private.html', user=user, request_sent=request_sent,request_received=request_received)
     else:
         return redirect(url_for('index'))
     
     
-@app.route('/add_friend', methods=['POST'])
-def add_friend():  
+@app.route('/request_friend', methods=['POST'])
+def request_friend():  
     form = FriendRequestForm()
     if form.validate_on_submit():
         if request.method =='POST':
             requester_id =request.form['requester_id']
             requested_id =request.form['requested_id']
         count = FriendRequest.query.filter_by(requester_id=requester_id, requested_id=requested_id).count()# @UndefinedVariable
-        count_reverse = FriendRequest.query.filter_by(requester_id=requested_id, requested_id=requester_id).count()# @UndefinedVariable
-        if count+count_reverse == 0:
+        #count_reverse = FriendRequest.query.filter_by(requester_id=requested_id, requested_id=requester_id).count()# @UndefinedVariable
+        if count == 0:
             friend_request = FriendRequest(requester_id=requester_id, requested_id=requested_id)
             try:
                 db.session.add(friend_request)# @UndefinedVariable
                 db.session.commit()# @UndefinedVariable
             except:
                 return "Error"
-    else:
-        return  render_template('add_friend_form.html',form=form)
+#     else:
+#         return  render_template('add_friend_form.html',form=form)
     return "Success"
 
 @app.route('/approve_friend', methods=['GET', 'POST'])
@@ -238,10 +217,11 @@ def approve_friend():
             else:
                 friend_request.approved=False
                 friend_request.ignored=True
-            db.session.add(friend_request)# @UndefinedVariable  
-            db.session.commit()# @UndefinedVariable                 
-        else:
-            return  "Error: No Friend Request"
+            try:
+                db.session.add(friend_request)# @UndefinedVariable  
+                db.session.commit()# @UndefinedVariable   
+            except:
+                return "Error"              
     #else:
 #     requester_id = request.args['requested_id']
 #     requested_id = request.args['requested_id']
@@ -272,75 +252,112 @@ def user_profile_pic_page(username):
         
         
 @app.route('/post', methods=['GET', 'POST'])      
+@login_required
 def post():
     form = PostForm()
-    if request.method =='POST' and form.validate_on_submit():
-        project_id = int(form.project_id)
+    if request.method =='POST' and form.validate_on_submit() and 'project_id' in request.form.keys():
+        project_id = int(request.form['project_id'])
         project = Project.query.get(project_id) # @UndefinedVariable
-        if current_user.id == project.created_by:
+        if current_user.id == project.created_by_id:
             post = Post(created_by=current_user.id,
-                        project=project.id,
-                        text=form.text
+                        project_id=project_id,
+                        text=form.post_text.data
                         )
-            file = request.files['project_id']
+            file = request.files['picture']
             if file:
-                filename = secure_filename(file.filename)
-                (file_id, file_extension) = os.path.splitext(filename)
-                filename = generate_filename(file_extension)
+                s3_filename = generate_filename(current_user.username)
+                post.pic_id=s3_filename
+                save_picture_s3(file,s3_filename, sizes=config.POST_PIC_SIZE)  
+            db.session.add(post)  # @UndefinedVariable
+            db.session.commit()  # @UndefinedVariable
+            return redirect(url_for('index'))
+    user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+    return render_template('post.html',form=form, projects=user_projects)
+            
+            
+            
+@app.route('/ajax_post', methods=['GET', 'POST'])      
+def ajax_post():
+    form = PostForm()
+    if request.method =='POST' and form.validate_on_submit():
+        project_id = int(request.form['project_id'])
+        project = Project.query.get(project_id) # @UndefinedVariable
+        if current_user.id == project.created_by_id:
+            post = Post(created_by=current_user.id,
+                        project_id=project_id,
+                        text=form.post_text.data
+                        )
+            file = request.files['picture']
+            if file:
+                filename = generate_filename(current_user.username)
                 post.pic_id=filename
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
                 file.save(filepath)
-                #user.set_profile_pic(filepath)
-                conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
-                bucket=conn.get_bucket(config.AWS_S3_BUCKET)
-                for size, dims in config.POST_PIC_SIZE.iteritems():
-                    pic = resize_and_crop(filepath, dims)
-                    #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
-                    pic_filename=size.lower()+'/'+filename
-                    key_pic = bucket.new_key(pic_filename)
-                    key_pic.set_contents_from_file(pic)  
-                    key_pic.set_acl('public-read')
-                os.remove(filepath) 
-            else:
-                return "no file"        
+                save_picture_s3(filepath,filename, sizes=config.POST_PIC_SIZE)
+                os.remove(filepath)       
             db.session.add(post)  # @UndefinedVariable
             db.session.commit()  # @UndefinedVariable
-        else:
-            redirect(url_for('index'))
-    return render_template('post.html',form=form)
-            
+            return "Success"
+    return "Error: Form Validation"
+
+
+#             
+# def save_picture(file, s3_filename, sizes):
+#     local_filepath = os.path.join(app.config['UPLOAD_FOLDER'], s3_filename) 
+#     file.save(local_filepath)
+#     #save_picture_s3(local_filepath,s3_filename, sizes)
+#     conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
+#     bucket=conn.get_bucket(config.AWS_S3_BUCKET)
+#     for size, dims in sizes.iteritems():
+#         pic = resize_and_crop(local_filepath, dims)
+#         #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
+#         pic_filename=size.lower()+'/'+s3_filename
+#         key_pic = bucket.new_key(pic_filename)
+#         key_pic.set_contents_from_file(pic)  
+#         key_pic.set_acl('public-read')
+#     os.remove(local_filepath)  
         
-@app.route('/project/<project_id>/<slug>/edit')
+@app.route('/project/<project_id>/<slug>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_project(project_id):
+def edit_project(project_id, slug):
     project = Project.query.get(int(project_id))  # @UndefinedVariable
-    form = ProjectEditForm()
-    if request.method == 'POST' and project.created_by == current_user.id and form.validate_on_submit() :
-        project.name = form.project_name
-        project.goal = form.goal
-        project.privacy_mode = form.privacy
+    form = ProjectForm()
+    if request.method == 'POST' and form.validate_on_submit() : ##and project.created_by == current_user.id and form.validate_on_submit() :
+        project.project_name = form.project_name.data
+        project.goal = form.goal.data
+        project.privacy_mode = form.privacy.data
+        project.comments = form.comments.data
+        file = request.files['picture']
+        if file: ## and allowed_filename_pic(file.filename):   
+            if not project.has_pic():
+                prefix = project.get_slug()[:10]
+                s3_filename = generate_filename(prefix)
+                project.pic_id = s3_filename 
+            save_picture_s3(file, project.pic_id, config.PROJ_PIC_SIZES)   
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-    return render_template('edit_project.html', project=project)
+    else:
+        form = ProjectForm(project_name=project.project_name, 
+                           goal=project.goal,
+                           comments = project.comments,
+                           privacy = project.privacy_mode)
+
+    return render_template('edit_project.html', form=form, project=project)
 
 @app.route('/create_project', methods=['GET', 'POST'])
 @login_required
 def create_project():
-    form =ProjectCreateForm()
-    form.user=current_user
+    form =ProjectForm()
+    form.created_by=current_user
     previous_page = config.ROOT_URL
     if request.method == 'POST' and form.validate_on_submit():
         project = Project(project_name=form.project_name.data, 
                           goal=form.goal.data, 
                           privacy=form.privacy.data,
-                          created_by=current_user.id)
+                          created_by_id=current_user.id)
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-        project.get_url()
-        db.session.add(project)  # @UndefinedVariable
-        db.session.commit() # @UndefinedVariable
         return redirect(project.get_url())
-    
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
 @app.route('/project/<project_id>/<slug>/')

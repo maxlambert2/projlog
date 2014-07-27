@@ -1,8 +1,78 @@
+function readURL(input) {
+
+	if (input.files && input.files[0]) {
+		var reader = new FileReader();
+
+		reader.onload = function(e) {
+			$('#preview_img').attr('src', e.target.result);
+			$('#add_picture').html("Picture Added");
+			}
+		reader.readAsDataURL(input.files[0]);
+	}
+	return true;
+}
+
+$(window).load(function () {
+	var cur_pic_id = "#current_pic_url"
+	var hello = $(cur_pic_id).length.toString()
+	if ( $(cur_pic_id).length > 0) {
+		var pic_url = $(cur_pic_id).val();
+		if (pic_url !== ""){
+	    	var pic_src = pic_url + "?" + new Date().getTime();
+	    	$("#preview_img").attr("src", pic_src) ;
+		}
+	}
+});
+
+ // $(window).load(function () {
+	// var selected_val = $('#project_select').val();
+	// var new_url = "/post?"+selected_val.toString();
+	// $('#create_post').href(new_url);
+ // });
+
+
+// function postStatus(this_id_in){
+
+// 		var formData = new FormData($('form.post_status')[0]);
+
+// 		var this_id ='#'+this_id_in;
+// 		var user_id = $("meta[name='user_id']");
+// 		var post_type = "status";
+
+// 		$.ajax({
+// 			url:"/post",
+// 			type:"POST",
+// 			data:{user_id: user_id, 
+// 				project_id: project_id
+// 				post_text: post_text 
+// 			},
+// 				success:function(data)
+// 				{	
+// 					msg = "";
+// 					if (approved) {
+// 						msg = "Friend Request Approved";
+// 					} else {
+// 						msg = "Friend Request Ignored";
+// 					}
+// 					$(this_id).html(msg);
+// 					$(this_id).removeAttr("onclick");
+// 					$(this_id).addClass("button_disabled");
+
+// 				},
+// 				error:function(jqXHR, textStatus, error){
+// 					$(this_id).html("Error");
+// 				}
+// 			});
+
+// return false;
+// }
+
+
 function addFriend(requester_id, requested_id){
 
 	var button_id = '#addFriend'+requested_id.toString();
 		$.ajax({
-			url:"/add_friend",
+			url:"/request_friend",
 			type:"POST",
 			data:{requester_id: requester_id, requested_id: requested_id },
 				success:function(data)
@@ -62,48 +132,32 @@ sfHover = function() {
 if (window.attachEvent) window.attachEvent("onload", sfHover);
 
 
-function approveFriendRequest(requester_id, requested_id){
-		var button_id = '#approve_'+requester_id.toString();
+function approveFriendRequest(this_id, approved, requester_id, requested_id){
+
+		var this_id ='#'+this_id;
 
 		$.ajax({
 			url:"/approve_friend",
 			type:"POST",
 			data:{requester_id: requester_id, 
 				requested_id: requested_id ,
-				approve: true
+				approve: approved
 			},
 				success:function(data)
-				{
-					$(button_id).html("Approved");
-					$(button_id).removeAttr("onclick");
-					$(button_id).addClass("button_disabled");
+				{	
+					msg = "";
+					if (approved) {
+						msg = "Friend Request Approved";
+					} else {
+						msg = "Friend Request Ignored";
+					}
+					$(this_id).html(msg);
+					$(this_id).removeAttr("onclick");
+					$(this_id).addClass("button_disabled");
+
 				},
 				error:function(jqXHR, textStatus, error){
-					$(button_id).html("Error: "+textStatus+" "+error);
-				}
-			});
-
-return false;
-}
-
-function ignoreFriendRequest(requester_id, requested_id){
-		var button_id = '#ignore_'+requester_id.toString();
-
-		$.ajax({
-			url:"/ignore_friend",
-			type:"POST",
-			data:{requester_id: requester_id, 
-				requested_id: requested_id ,
-				approve: false
-			},
-				success:function(data)
-				{
-					$(button_id).html("Ignored");
-					$(button_id).removeAttr("onclick");
-					$(button_id).addClass("button_disabled");
-				},
-				error:function(jqXHR, textStatus, error){
-					$(button_id).html("Error: "+textStatus+" "+error);
+					$(this_id).html("Error");
 				}
 			});
 
@@ -136,18 +190,6 @@ $('#preview_img').change(function(i, item) {
     }
 });
 
-function readURL(input) {
-
-	if (input.files && input.files[0]) {
-		var reader = new FileReader();
-
-		reader.onload = function(e) {
-			$('#preview_img').attr('src', e.target.result);
-			}
-		reader.readAsDataURL(input.files[0]);
-	}
-	return true;
-}
 
 
 

@@ -1,27 +1,34 @@
 {% extends "index.html" %}
-
-
+  {% from "_form_macro.html" import render_field %}
 
 {% block center_column %}
-    <div class="create_post">
+       <form class="post_status full_page" action="/post" method="post" enctype=multipart/form-data  name="post_status" >
+    <fieldset>
 
-<form> 
-    	New Post for Project &nbsp;
-        <select name="projects" id="post_project">
-            {% for project in projects %}
-            <option value="{{project.id}}">{{project.project_name}}</option>
-            {% endfor %}
-        </select>
+        {{form.hidden_tag()}} 
+<ul>
+  <li>
+      <label for="project_id"> Project: </label>
+          <select name="project_id" id="project_id" >
+              {% for project in projects %}
+              <option value="{{project.id}}">{{project.project_name}}</option>
+              {% endfor %}
+          </select>
+        </li>
 
+         {{ render_field(form.post_text) }} 
+</li>
+</ul>
+  <div class="inputWrapper" id="add_picture"> Add Picture
+       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
+     </div>
+
+  <input type="submit" value="Update Status" class="button"/>
+
+
+   <img id="preview_img" src="" />
+
+ </fieldset>
       </form>
-      {% else %}
-
-        You have not created a project yet. <a href="/create_project" class="button center"> Create Project  </a>
-
-      {% endif %}
-
-
-    </div>
-
 
 {% endblock %}
