@@ -1,5 +1,6 @@
 {% extends "index.html" %}
   {% from "_form_macro.html" import render_field %}
+      {% from "_display_pic_input.html" import render_pic_input %}
 
 {% block center_column %}
        <form class="post_status full_page" action="/post" method="post" enctype=multipart/form-data  name="post_status" >
@@ -17,16 +18,17 @@
         </li>
 
          {{ render_field(form.post_text) }} 
-</li>
+
 </ul>
-  <div class="inputWrapper" id="add_picture"> Add Picture
+<!--   <div class="inputWrapper" id="add_picture"> Add Picture
        <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
      </div>
 
-  <input type="submit" value="Update Status" class="button"/>
+  <input type="submit" value="Update Status" class="button"/>  <img id="preview_img" src="" /> -->
 
+{{ render_pic_input("", "Add Picture") }}
 
-   <img id="preview_img" src="" />
+<input type="submit" value="Update Status" class="button"/> 
 
  </fieldset>
       </form>

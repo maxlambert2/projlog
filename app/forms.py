@@ -56,8 +56,8 @@ class SignupForm(Form):
     
 class ProjectForm(Form):
     project_name = TextField('Project Name*', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
-    goal = TextAreaField('Goal*', validators = [Required(), Length(min=6, max=200)])
-    privacy = SelectField('Privacy Setting*', validators = [Required()], 
+    goal = TextAreaField('Goal')
+    privacy = SelectField('Privacy Setting', validators = [Required()], 
                                   choices=[('0', 'Public'), 
                                            ('1', 'Friends Only')]
                                            ## ('2', 'Private (Select Friends Only)')]
@@ -90,6 +90,10 @@ class PostForm(Form):
 #             projects = Project.query.filter_by(created_by_id = user_id).limit(config.PROJ_LIST_LIMIT) # @UndefinedVariable
 #             self.project.choices = projects
 #         Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+class PostFormAjax(PostForm):
+    user_id = IntegerField('user_id', validators = [Required()])  
+    project_id = IntegerField('project_id', validators = [Required()]) 
     
 class FriendRequestForm(Form):
     requester_id = IntegerField('requester_id')

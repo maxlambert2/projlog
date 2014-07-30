@@ -1,14 +1,20 @@
 {% macro display_post(post) %}
 	<div class="post">
-		{{ display_user( post.created_by) }}
-				<div class="date">{{post.get_created_date_text()}}</div>
-		<div class="post_text">
+		<div class="post_header">
+			<a src="{{post.created_by.get_profile_url()}}"><img class="thumbnail" src="{{post.created_by.get_thumbnail_url()}}" />
+			<div class="bold">
+				{{post.created_by.get_full_name()}}
+			</div>
+			</a>
+			<div class="date">
+				{{post.get_created_date_str()}}
+				</div>
+	</div>
+		<div class="post_content">
 			{{post.text}}
 		</div>
 		{% if post.get_pic_url() %}
-			<div>
-				<a href="{{post.get_pic_url(size='large')}}"><img src="{{post.get_pic_url(size='medium')}}"></a>
-			</div>
+				<img class="post" src="{{post.get_pic_url(size='large')}}" />
 		{% endif %}
 	</div>
 {% endmacro %}

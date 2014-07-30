@@ -75,6 +75,7 @@ class User(db.Model):
 
     
     projects = relationship('Project', backref='created_by')
+    posts = relationship('Post', backref='created_by')
     
 
     def __init__(self, username, email,password):
@@ -130,7 +131,12 @@ class User(db.Model):
                 
     def get_profile_pic_url(self, size=config.DEFAULT_PROFILE_PIC_SIZE):
         if self.profile_pic_id is None:
-            file_name = config.DEFAULT_PROFILE_PIC
+            if size in ('tiny', 'thumbnail'):
+                file_name =config.DEFAULT_THUMBNAIL
+            elif size == 'medium':
+                file_name =config.DEFAULT_PROFILE_PIC_MED
+            else:
+                file_name = config.DEFAULT_PROFILE_PIC
         else:
             file_name = size+'/'+self.profile_pic_id
         return get_s3_url(file_name)
@@ -220,7 +226,7 @@ class User(db.Model):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
     
     def posts_followed(self):
-        return Post.query.join(followers, (followers.c.followed_id == Post.created_by)).filter(followers.c.follower_id == self.id).order_by(Post.created_date.desc())
+        return Post.query.join(friendships, (friendships.c.friend_id == Post.created_by_id)).filter(friendships.c.user_id == self.id).order_by(Post.created_date.desc())
 
     def update_profile(self, username, first_name, last_name, location, profile_pic_url):
         self.username = username
@@ -371,7 +377,7 @@ class Post(db.Model):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.now)
-    created_by =  Column(Integer, ForeignKey('user.id'))
+    created_by_id =  Column(Integer, ForeignKey('user.id'))
     project_id = Column(Integer, ForeignKey('project.id'), index=True)
     text = Column(Text())
     pic_id = Column(String(80))
@@ -381,7 +387,7 @@ class Post(db.Model):
     def get_pic_url(self,size='large'):
         if self.pic_id is None:
             return None
-        path = size+self.pic_id
+        path = size+'/'+self.pic_id
         return get_s3_url(path)
     
     def get_created_date_str(self):
@@ -389,11 +395,13 @@ class Post(db.Model):
         if diff.days > 10:
             return self.created_date.strftime("%B %d, %Y")
         if diff.days > 1:
-            return str(diff.days)+' days ago'
-        elif diff.hours > 1:
-            return str(diff.hours)+ ' hours ago'
+            return str(int(diff.days)) +' days ago'
+        elif diff.seconds > 3600:
+            hours = int(round(diff.seconds/3600,0))
+            return str(hours)+ ' hours ago'
         else:
-            return str(diff.minutes)+ ' minutes ago'
+            minutes = int(round(diff.seconds/60,0))
+            return str(minutes)+ ' minutes ago'
             
     
 class PostComment(NotificationMixin, db.Model):

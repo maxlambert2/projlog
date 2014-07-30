@@ -8,7 +8,7 @@
 {% endblock %}
 
   {% block additional_fields %}
-{{ render_pic_input("", "Change Project Picture") }}
+{{ render_pic_input(project.get_pic_url(size="medium"), "Change Project Picture") }}
 {% endblock %}
 
     {% block form_submit %}

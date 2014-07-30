@@ -50,7 +50,6 @@ body {
 }
 
 div#header{
-	width:100%;
 	height:35px;
 	/*background-color:#E9EEF7;*/
 	padding: 2px;
@@ -61,17 +60,21 @@ div#header{
 }
 
 #main{
-	min-height:500px;
-	width:100%;
 	margin:0 auto;
 	padding: 0;
 	text-align: left;
+	overflow: auto;
+	position: relative;
+	display: inline-table;
+	width: 1100px;
+}
+
+.clearfloats{
+	clear:both;
 }
 
 #footer{
 	clear:both;
-	position: relative;
-	vertical-align:text-bottom;
 	text-align:center;
 	font-size:13px;
 	padding-top: 80px;
@@ -91,7 +94,7 @@ padding: 0;
 }
 
 .landing_page #rightcolumn {
-min-width:400px;
+width:400px;
 padding-left: 15px;
 float:left;
 padding: 0;
@@ -117,6 +120,9 @@ margin: 0;
 display: block;
 }
 
+.post_text{
+	padding: 10px;
+}
 
 
 #bottom {
@@ -144,11 +150,16 @@ padding:10px;
 }
 
 #rightcolumn {
-float:left;
+overflow: auto;
+margin: 0 auto;
+display: table;
+padding: 15px;
+float: left;
 }
 
 #rightcolumn.project {
-	width: 600px;
+	width: 700px;
+	background-color: #F6F6F6;
 }
 
 #leftcolumn.two_col_layout {
@@ -189,20 +200,55 @@ table.projects {
 
 table.projects tr {
 	background-color: #F6F6F6;
-	border-bottom: 1px solid white;
-	padding: 0;
-	height: 90px;
+	border-bottom: 2px solid white;
 }
 
 table.projects tr td {
-	padding: 10px;
-	border-top: 1px solid white;
+	border-top: 2px solid white;
+	border-left: 2px solid white;
+	height: 180px; 
 }
 
-td.project_name {
-	width: 130px;
-	text-align: center;
+table.projects tr td:not(.project_name){
+	padding:0 15px;
 }
+
+
+td.project_name {
+	text-align: center;
+	position: relative;
+	width: 240px;
+}
+
+.project_name h1, h2{
+	position: absolute;
+	font-weight: bold;
+	z-index: 5;
+	width: 100%;
+	text-align: center;
+	top:80px;
+}
+
+
+#back_pic_container h1 {
+	top:80px;
+}
+
+h2 {
+	font-size: 1.5em;
+}
+
+h1 {
+	font-size: 3em;
+}
+
+.with_pic {
+	color: white;
+	
+/*	background-color: #B0E2FF;
+	 background: rgba(0, 0, 0, 0.3);*/
+}
+
 
 div#nopagefound {
 	padding:100px;
@@ -259,7 +305,7 @@ img{
 
 input,textarea, select  {
 	background:#ffffff;
-	padding:0.7em 0.5em;
+	padding:0.5em;
 	color:black;
 	text-align:left;
 	font-size:1em;
@@ -412,17 +458,17 @@ form.post_status.full_page textarea{
 	margin: 1em;
 }
 
-form.post_status.full_page #add_picture {
+#add_picture {
 	clear:both;
+	font-weight: bold;
+color: #328ED9;;
 }
 
-form.post_status.full_page
 
 form.post_status input[type="submit"]{
-	margin-top: 10px;
-margin-left: 350px;
+margin-left: 220px;
 float: left;
-clear: both;
+margin-top: 5px;
 }
 
 .profile_summary{
@@ -430,9 +476,20 @@ clear: both;
 	padding: 10px;
 }
 
+div.post {
+	width: 640px;
+	position: relative;
+	float:left;
+	clear: both;
+	padding: 0.8em;
+	margin-left: 10px;
+	margin-bottom: 10px;
+	background-color: white;
+	border:1px solid #CCCCCC;
+}
 
 #leftcolumn ul li {
-	padding:0.5em;
+	padding:0.8em;
 	 overflow: auto;
 	 text-align: left;
 	 clear: both;
@@ -465,13 +522,15 @@ clear: both;
 
 #proj_back_pic {
 	position: absolute;
-	left: 200px;
-	top:50;
-	width: 700px;
-	height: 250px;
+	left: 150px;
+	width: 800px;
+	height: 225px;
+	margin:10px;
 	z-index: 2;
-	background-color: #B0E2FF;
+	color: white;
+	background-color:#CCE0FF;
 }
+
 
 #back_pic_container{
 	width: 100%;
@@ -486,7 +545,7 @@ clear: both;
 	text-align: center;
 	font-size: 1em;
 	clear: both;
-	background-color: #F2F2F2;
+	background-color: white;
 }
 
 #proj_content{
@@ -527,14 +586,20 @@ form ul li {
 	vertical-align:middle;
 	clear:both;
 	overflow: auto;
-	display: inline;
 	/*background-color: red;*/
 }
-
-.user_thumbnail {
+img.tiny {
+	height: 70px;
+	width: 70px;
+}
+.user_display {
 	width: 120px;
 	text-align: center;
 	float: left;
+}
+.small_pic_caption {
+	padding: 5px;
+	display: block;
 }
 
 .user_thumbnail a {
@@ -545,6 +610,16 @@ form ul li {
 
 .thumbnail_label {
 	margin-top: 40px;
+	float: left;
+}
+
+.date {
+	font-size: 0.8em;
+	color: #B8B8B8;
+}
+
+
+.post img.thumbnail {
 	float: left;
 }
 
@@ -602,7 +677,7 @@ input#signup_button {
 .news_feed {
 	padding: 10px;
 	text-align: left;
-	width: 600px;
+	width: 700px;
 	display: block;
 }
 
@@ -631,9 +706,18 @@ form textarea {
 	width: 20em;
 }
 
+form.project input[type="text"]{
+	width: 25em;
+}
+
 form.project textarea {
 	height: 7em;
 	width: 25em;
+}
+
+form.project textarea#goal {
+	width: 25em;
+	height: 3em;
 }
 
 input.file-browser , .filename{
@@ -647,7 +731,7 @@ input[type="file"] {
 }
 
 #leftcolumn.project ul li {
-	border-top: 2px solid white;
+	border-top: 2px solid #F6F6F6;
 }
 
 .fileInput{
@@ -657,7 +741,7 @@ input[type="file"] {
     position:absolute;
     top: 0;
     right: 0;
-    z-index: 99;
+    z-index: 9;
     /*Opacity settings for all browsers*/
     opacity: 0;
     -moz-opacity: 0;
@@ -669,9 +753,27 @@ input[type="file"] {
     overflow: hidden;
     position: relative;
     cursor: pointer;
-    width:90px;
     float: left;
     margin: 10px;
+    z-index: 7;
+}
+
+.bold {
+	font-weight: bold;
+}
+.post_header {
+	display: block;
+	height: 30px;
+}
+.post_content {
+	margin-top: 10px;
+	min-height: 1.5em;
+	padding-top: 0.6em;
+}
+
+img.post {
+	max-width: 640px;
+	padding-top:0.6em;
 }
 
 ul.leftbar {
@@ -915,9 +1017,8 @@ form.full_page .submit_cancel_buttons {
 
 a.cancel_button{
 	padding:0.7em;
-	margin-left: 10px;
 	text-align: right;
-	display: block;
+	display: inline;
 	float: right;
 }
 
@@ -940,9 +1041,7 @@ div.choices {
 }
 
 .thumbnail {
-	height: 70px;
-	width: 70px;
-	display: inline;
+padding-right: 7px;
 }
 
 .thumbnail .user_name {

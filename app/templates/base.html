@@ -25,7 +25,7 @@
 	
 <div id="header">
   <a id="logo"  class="toolbar_link" href="/"><img src="{{config.LOGO_URL}}" /></a> 
- <div id="moto" > A Project Log for Personal Projects </div>
+ <div id="moto" > A Project Log for All Projects </div>
 
  {% if current_user.username %} 
 
@@ -61,8 +61,9 @@
 	{% endif %}
 
 </div>
-<div id="main">
+<div id="main" >
 	{% block content %} {% endblock content %}
+	<div class="clearfloats"><!----></div>
 </div>
 		<div id="footer">
 		{% block footer %}  &#169; 2013 Projlog

@@ -21,16 +21,19 @@ User has not created any projects yet.
 <table class="projects">
 {% for project in projects %}
 <tr>
-<td >
+<td class="project_name">
+	<a href="{{project.get_url()}}">
 	{% if project.has_pic() %}
-	<a href="{{project.get_url()}}"><img  class="thumbnail" src="{{project.get_pic_thumbnail_url()}}" /></a>
+	<img  class="small" src="{{project.get_pic_url(size='medium')}}" /></a>
+ <a href="{{project.get_url()}}"><h2 class="with_pic">
+	{% else %}
+	<h2>
 	{% endif %}
-	</td>
-	<td class="project_name">
-<a href="{{project.get_url()}}">{{project.project_name}}</a>
+	{{project.project_name}}</h2></a>
+</a>
 </td>
 <td>
-	<span class="label"> Goal:&nbsp; </span> {{project.goal}}
+	 {{project.goal}}
 </td>
 </tr>
 {% endfor %}

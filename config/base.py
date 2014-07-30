@@ -27,19 +27,28 @@ S3_BUCKET_URL = 'https://s3.amazonaws.com/'+AWS_S3_BUCKET
 
 SLUG_LENGTH=30
 
-LARGE_PIC_DIM = (640,640)
-THUMBNAIL_DIM=(70,70)
+LARGE_PIC_DIM = (640,480)
+THUMBNAIL_DIM=(35,35)
 MEDIUM_PIC_DIM=(250,250)
+SMALL_PIC_DIM = (200, 120)
+TINY_PIC_DIM = (70,70)
 DEFAULT_IMG_SIZE='large'
 DEFAULT_PROFILE_PIC_SIZE='medium'
+COVER_PIC_DIM = (800,225)
+
 PROFILE_PIC_SIZES ={'medium': MEDIUM_PIC_DIM,
-                   'thumbnail': THUMBNAIL_DIM}
+                    'thumbnail':THUMBNAIL_DIM,
+                   'small': SMALL_PIC_DIM,
+                   'tiny': TINY_PIC_DIM
+                   }
 
-POST_PIC_SIZES ={'large': LARGE_PIC_DIM}
+POST_PIC_SIZES ={'large': LARGE_PIC_DIM,
+                 'small' : SMALL_PIC_DIM }
 
-PROJ_PIC_SIZES = {'large':(700,250),
-                  'medium':MEDIUM_PIC_DIM,
-                  'thumbnail':THUMBNAIL_DIM }
+PROJ_PIC_SIZES = {'large':COVER_PIC_DIM,
+                  'small':SMALL_PIC_DIM,
+                  'medium':(240,180),
+                  'tiny': TINY_PIC_DIM }
 
 
 DEFAULT_PIC_SIZE = 'medium'

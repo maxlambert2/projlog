@@ -133,7 +133,8 @@ def edit_profile(status=None):
     previous_page = config.ROOT_URL
     form.old_username = user.username
     profile_pic_url = user.get_profile_pic_url()
-    
+    if 'status' in request.args.keys():
+        status = request.args['status']
     temp_file_name = user.username
     if request.method == 'POST' and form.validate_on_submit():
             user.username = form.username.data
@@ -259,64 +260,57 @@ def post():
         project_id = int(request.form['project_id'])
         project = Project.query.get(project_id) # @UndefinedVariable
         if current_user.id == project.created_by_id:
-            post = Post(created_by=current_user.id,
-                        project_id=project_id,
-                        text=form.post_text.data
-                        )
-            file = request.files['picture']
-            if file:
-                s3_filename = generate_filename(current_user.username)
-                post.pic_id=s3_filename
-                save_picture_s3(file,s3_filename, sizes=config.POST_PIC_SIZE)  
-            db.session.add(post)  # @UndefinedVariable
-            db.session.commit()  # @UndefinedVariable
+            file=request.files['picture']
+            create_post(project_id, current_user.id, form.post_text.data, file)
             return redirect(url_for('index'))
     user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
     return render_template('post.html',form=form, projects=user_projects)
             
-            
+
+def create_post(project_id, user_id, post_text, pic_file):
+    post = Post(created_by_id=user_id,
+                        project_id=project_id,
+                        text=post_text
+                        )
+    if pic_file:
+        s3_filename = generate_filename(current_user.username)
+        post.pic_id=s3_filename
+        save_picture_s3(pic_file,s3_filename, sizes=config.POST_PIC_SIZES)  
+    db.session.add(post)  # @UndefinedVariable
+    db.session.commit()  # @UndefinedVariable
+    
             
 @app.route('/ajax_post', methods=['GET', 'POST'])      
 def ajax_post():
-    form = PostForm()
+    form = PostFormAjax()
     if request.method =='POST' and form.validate_on_submit():
-        project_id = int(request.form['project_id'])
+        project_id = form.project_id.data
+        user_id = form.user_id.data
+        post_text = form.post_text.data
         project = Project.query.get(project_id) # @UndefinedVariable
-        if current_user.id == project.created_by_id:
-            post = Post(created_by=current_user.id,
-                        project_id=project_id,
-                        text=form.post_text.data
-                        )
-            file = request.files['picture']
-            if file:
-                filename = generate_filename(current_user.username)
-                post.pic_id=filename
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
-                file.save(filepath)
-                save_picture_s3(filepath,filename, sizes=config.POST_PIC_SIZE)
-                os.remove(filepath)       
-            db.session.add(post)  # @UndefinedVariable
-            db.session.commit()  # @UndefinedVariable
+        pic_file=None
+        if 'picture' in request.files:
+            pic_file = request.files['picture']
+        if user_id == project.created_by_id:
+            create_post(project_id, user_id, post_text, pic_file)
             return "Success"
     return "Error: Form Validation"
 
+@app.route('/project/<project_id>/<slug>/', methods=['GET', 'POST'])
+@login_required
+def project_page(project_id, slug):
+    project = Project.query.get(project_id) # @UndefinedVariable
+    posts = Post.query.filter_by(project_id=project_id).order_by(Post.created_date.desc()).limit(10)# @UndefinedVariable
+    viewable=project.is_viewable_by(current_user.id)
+    form=PostForm()
+    if request.method == 'POST' and form.validate_on_submit() :
+        pic_file = request.files['picture']
+        post_text = form.post_text.data
+        user_id = current_user.id
+        create_post(project_id, user_id, post_text, pic_file)
+    return render_template('project_page.html', project=project, posts=posts, viewable=viewable, form=form)
 
-#             
-# def save_picture(file, s3_filename, sizes):
-#     local_filepath = os.path.join(app.config['UPLOAD_FOLDER'], s3_filename) 
-#     file.save(local_filepath)
-#     #save_picture_s3(local_filepath,s3_filename, sizes)
-#     conn = boto.connect_s3(config.AWS_ACCESS_KEY_ID, config.AWS_SECRET_ACCESS_KEY)
-#     bucket=conn.get_bucket(config.AWS_S3_BUCKET)
-#     for size, dims in sizes.iteritems():
-#         pic = resize_and_crop(local_filepath, dims)
-#         #pic = resize_image(filepath, width=config.PROFILE_PIC_WIDTH)
-#         pic_filename=size.lower()+'/'+s3_filename
-#         key_pic = bucket.new_key(pic_filename)
-#         key_pic.set_contents_from_file(pic)  
-#         key_pic.set_acl('public-read')
-#     os.remove(local_filepath)  
-        
+
 @app.route('/project/<project_id>/<slug>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_project(project_id, slug):
@@ -336,6 +330,7 @@ def edit_project(project_id, slug):
             save_picture_s3(file, project.pic_id, config.PROJ_PIC_SIZES)   
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
+        redirect(project.get_url())
     else:
         form = ProjectForm(project_name=project.project_name, 
                            goal=project.goal,
@@ -360,12 +355,6 @@ def create_project():
         return redirect(project.get_url())
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
-@app.route('/project/<project_id>/<slug>/')
-@login_required
-def project_page(project_id, slug):
-    project = Project.query.get(project_id) # @UndefinedVariable
-    viewable=project.is_viewable_by(current_user.id)
-    return render_template('project_page.html', project=project,  viewable=viewable)
 
 
 @app.route('/follow/<username>')

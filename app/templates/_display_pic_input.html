@@ -1,7 +1,6 @@
  {% macro render_pic_input(current_pic_url, label) %}
 	    <div id="edit_picture">
-	<label for="picture" > {{label}} </label>
-	<div class="inputWrapper button">Browse Files
+	<div class="inputWrapper button">{{label}}
 	     <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
 	   </div>
 	<input type="hidden" id="current_pic_url" name="current_pic_url" value="{{current_pic_url}}" />

@@ -30,9 +30,9 @@
   <div class="submit_cancel_buttons">
       <input type="submit" value="Save" class="button"/>
     {% if status == 'first' %}
-   <a class="cancel_button" href="url_for(create_project)" >Skip</a>
+   <a class="cancel_button" href="/create_project" >Skip</a>
    {% else %}
-  <a class="cancel_button" href="{{previous_page}}">Cancel</a>
+  <a class="cancel_button" href="/">Cancel</a>
   {% endif %}
   </div>
 

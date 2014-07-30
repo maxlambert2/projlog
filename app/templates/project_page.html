@@ -2,17 +2,21 @@
 {% extends "base.html" %}
  {% from "_display_user_macro.html" import display_user %}
  {% from "_display_post_form.html" import display_post_form %}
+  {% from "_display_post_macro.html" import display_post %}
 
 {% block content %}
 
 
-<div id="back_pic_container">
+<div id="back_pic_container" class="project_name">
+	<div id="proj_back_pic" > 
 		{% if project.get_pic_url() %}
 			<img id="proj_back_pic" src="{{ project.get_pic_url(size='large') }}" />
+			<h1 class="with_pic">
 		{% else %}
-			<div id="proj_back_pic" > </div>
+
+			<h1>
 	{% endif %}
-	<div id="project_page_name">Project {{project.project_name}} </div>
+	{{project.project_name}} </h1></div>
 </div>
 <!-- <div id="proj_content"> -->
 <div id="leftcolumn" class="project">
@@ -35,11 +39,21 @@
 </ul>
 </div>
 
-<div id="rightcolumn">
+<div id="rightcolumn" class="project">
 	{% if project.created_by_id == current_user.id %}
-		{{ display_post_form(project.id) }}
-	{% endif %}
+		 <form class="post_status" action="" method="post" enctype=multipart/form-data  name="post_status" >
+    <fieldset>
+    	     {{form.hidden_tag()}} 
+    <input type="hidden" name="project_id" id="project_id" value="{{project_id}}" />
+ <textarea id="post_text" name="post_text"></textarea>
+  <div class="inputWrapper" id="add_picture"> Add Picture
+       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
+     </div>
+  <input type="submit" value="Update Status" class="button"/>
+ </fieldset>
+      </form>
 
+	{% endif %}
 
 		{% for post in posts %}
 			{{ display_post(post) }}
