@@ -1,8 +1,7 @@
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import MetaData, Column, String, Boolean, Text, Integer, DateTime, SmallInteger, ForeignKey, Sequence
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from  app import db
+from sqlalchemy import Text, Integer, DateTime, String, Boolean, SmallInteger, Column
 import md5
 from file_lib import get_s3_url, generate_filename, resize_and_crop
 import config
@@ -12,12 +11,12 @@ from random import randrange
 import boto
 from datetime import datetime, timedelta
 
-#import string
+#import String
 #import random
 
 def base36encode(number):
     if not isinstance(number, (int, long)):
-        raise TypeError('number must be an integer')
+        raise TypeError('number must be an Integer')
     if number < 0:
         raise ValueError('number must be positive')
 
@@ -30,52 +29,50 @@ def base36encode(number):
 
     return base36 or alphabet[0]
 
-metadata = MetaData()
 
 followers = db.Table('followers',  # @UndefinedVariable
-    db.Column('follower_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
-    db.Column('followed_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
+    Column('follower_id', Integer, db.ForeignKey('user.id'), index=True),  # @UndefinedVariable
+    Column('followed_id', Integer, db.ForeignKey('user.id'), index=True),  # @UndefinedVariable
 )
    
 
 friendships = db.Table('friendships',   # @UndefinedVariable
-    db.Column('user_id', Integer, ForeignKey('user.id'), index=True),  # @UndefinedVariable
-    db.Column('friend_id', Integer, ForeignKey('user.id')),  # @UndefinedVariable
-    created_date = Column(DateTime, default=datetime.now)
+    Column('user_id', Integer, db.ForeignKey('user.id'), index=True),  # @UndefinedVariable
+    Column('friend_id', Integer, db.ForeignKey('user.id')),  # @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
 )
 
 class User(db.Model):
     __tablename__ = 'user'
-    id = Column(Integer, Sequence('user_id_seq', start=20000), primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    username = Column(String(30), unique=True)
-    email = Column(String(60), unique=True)
-    active = Column(Boolean, default=True)
-    privacy = Column(Integer, default=0)  #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
-    pw_hash = Column(String(100))
-    first_name = Column(String(30))
-    last_name = Column(String(30))
-    location = Column(String(30))
-    gender = Column(String(1))
-    profile_pic_id = Column(String(60))
-    about = Column(Text)
-    follows = relationship('User', 
+    id = Column(Integer, db.Sequence('user_id_seq', start=20000), primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    username = Column(String(30), unique=True)# @UndefinedVariable
+    email = Column(String(60), unique=True)# @UndefinedVariable
+    active = Column(Boolean, default=True)# @UndefinedVariable
+    privacy = Column(Integer, default=0) # @UndefinedVariable #default privacy for projects: 0 is public; 1 is friends only; 2 is private projects
+    pw_hash = Column(String(100))# @UndefinedVariable
+    first_name = Column(String(30))# @UndefinedVariable
+    last_name = Column(String(30))# @UndefinedVariable
+    location = Column(String(30))# @UndefinedVariable
+    gender = Column(String(1))# @UndefinedVariable
+    profile_pic_id = Column(String(60))# @UndefinedVariable
+    about = Column(db.Text)# @UndefinedVariable
+    follows = db.relationship('User', # @UndefinedVariable
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
         secondaryjoin = (followers.c.followed_id == id), 
-        backref = backref('followers', lazy = 'dynamic'), 
+        backref = db.backref('followers', lazy = 'dynamic'), # @UndefinedVariable
         lazy = 'dynamic')
-    friends = relationship('User',
+    friends = db.relationship('User',# @UndefinedVariable
         secondary = friendships,
         primaryjoin = (friendships.c.user_id==id),
         secondaryjoin = (friendships.c.friend_id==id),
-        backref = backref('friendships', lazy = 'dynamic'),
+        backref = db.backref('friendships', lazy = 'dynamic'),# @UndefinedVariable
         lazy='dynamic'
         )
 
-    
-    projects = relationship('Project', backref='created_by')
-    posts = relationship('Post', backref='created_by')
+    projects = db.relationship('Project', backref='created_by')# @UndefinedVariable
+    posts = db.relationship('Post', backref='created_by')# @UndefinedVariable
     
 
     def __init__(self, username, email,password):
@@ -111,12 +108,12 @@ class User(db.Model):
         return Notification.query.filter_by(user_id=self.id,seen=False).count()
         
     def get_notifications(self):
-        return Notification.query.filter_by(user_id=self.id, seen=False).limit(10).all()
+        return Notification.query.filter_by(user_id=self.id).limit(8).all()
     
     def is_viewable_by(self,user_id):
         if self.is_private == False or self.id == user_id:
             return True
-        elif self.friends.filter(friendships.c.friend_id == user_id).count() > 0:
+        elif self.friends.filter( friendships.c.friend_id == user_id).count() > 0:
             return True
         else:
             return False
@@ -257,17 +254,17 @@ class User(db.Model):
 
 class Project(db.Model):
     __tablename__ = 'project'
-    id = Column(Integer, Sequence('project_id_seq', start=30000), primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    privacy_mode = Column(SmallInteger, default=0)
-    created_by_id = Column(Integer, ForeignKey('user.id'), index=True)
-    project_name = Column(String(50))
-    goal = Column(String(200))
-    slug = Column(String(30))
-    comments=Column(Text)
-    pic_id = Column(String(100))
-    posts = relationship('Post',  lazy = 'dynamic')
-    members = relationship('ProjectMember')
+    id = Column(Integer, db.Sequence('project_id_seq', start=30000), primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    privacy_mode = Column(SmallInteger, default=0)# @UndefinedVariable
+    created_by_id = Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
+    project_name = Column(String(50))# @UndefinedVariable
+    goal = Column(String(200))# @UndefinedVariable
+    slug = Column(String(30))# @UndefinedVariable
+    comments=Column(Text)# @UndefinedVariable
+    pic_id = Column(String(100))# @UndefinedVariable
+    posts = db.relationship('Post',  lazy = 'dynamic')# @UndefinedVariable
+    members = db.relationship('ProjectMember')# @UndefinedVariable
     
     def __init__(self, project_name, goal, created_by_id, privacy):
         self.project_name=project_name
@@ -296,20 +293,22 @@ class Project(db.Model):
         self.slug=slug
         return self.slug
         
-    def get_url(self):
+    def get_path(self):
         updated=0
         if self.slug is None or len(self.slug.strip())==0:
             self.get_slug()
             updated+=1
         path = '/project/'+str(self.id)+'/'+self.slug
-        project_url = config.ROOT_URL+path
         if updated > 0:
             try:
                 db.session.add(self)  # @UndefinedVariable
                 db.session.commit()  # @UndefinedVariable
             except:
                 db.session.rollback()  # @UndefinedVariable
-        return project_url
+        return path
+    
+    def get_url(self):
+        return self.get_path()
     
     def get_edit_url(self):
         edit_url = self.get_url()+'/edit'
@@ -327,18 +326,18 @@ class Project(db.Model):
     
 class ProjectMember(db.Model):
     __tablename__ = 'project_member'
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey('project.id'), index=True)
-    member = Column(Integer, ForeignKey('user.id'))
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    project_id = Column(Integer, db.ForeignKey('project.id'), index=True)# @UndefinedVariable
+    member = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
     
 
 class Notification(db.Model):
-    id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    user_id =  Column(Integer, ForeignKey('user.id'), index=True)
-    message = Column(String(150))
-    link = Column(String(100))
-    seen = Column(Boolean, default=False)
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    user_id =  Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
+    message = Column(String(150))# @UndefinedVariable
+    link = Column(String(100))# @UndefinedVariable
+    seen = Column(Boolean, default=False)# @UndefinedVariable
         
     def __init__(self, user_id, message, link):
         self.message=message
@@ -356,13 +355,13 @@ class NotificationMixin(object):
 
 class FriendRequest(NotificationMixin, db.Model):
     __tablename__ = 'friend_request'
-    id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    requester_id = Column(Integer, ForeignKey('user.id'))
-    requested_id = Column(Integer, ForeignKey('user.id'), index=True)
-    approved = Column(Boolean, default=False)
-    ignored = Column(Boolean, default=False)
-    requester = relationship('User', foreign_keys=[requester_id])
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    requester_id = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
+    requested_id = Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
+    approved = Column(Boolean, default=False)# @UndefinedVariable
+    ignored = Column(Boolean, default=False)# @UndefinedVariable
+    requester = db.relationship('User', foreign_keys=[requester_id])# @UndefinedVariable
                             
 
     def __init__(self,requester_id, requested_id):
@@ -375,14 +374,14 @@ class FriendRequest(NotificationMixin, db.Model):
             
 class Post(db.Model):
     __tablename__ = 'post'
-    id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    created_by_id =  Column(Integer, ForeignKey('user.id'))
-    project_id = Column(Integer, ForeignKey('project.id'), index=True)
-    text = Column(Text())
-    pic_id = Column(String(80))
-    comments = relationship('PostComment',  lazy='dynamic')
-    likes = relationship('PostLike', lazy='dynamic')
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    created_by_id =  Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
+    project_id = Column(Integer, db.ForeignKey('project.id'), index=True)# @UndefinedVariable
+    db.Text = Column(db.Text())# @UndefinedVariable
+    pic_id = Column(String(80))# @UndefinedVariable
+    comments = db.relationship('PostComment',  lazy='dynamic')# @UndefinedVariable
+    likes = db.relationship('PostLike', lazy='dynamic')# @UndefinedVariable
     
     def get_pic_url(self,size='large'):
         if self.pic_id is None:
@@ -406,24 +405,24 @@ class Post(db.Model):
     
 class PostComment(NotificationMixin, db.Model):
     __tablename__ = 'post_comment'
-    id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.now)
-    post = Column(Integer, ForeignKey('post.id'), index=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    text = Column(Text())
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    post = Column(Integer, db.ForeignKey('post.id'), index=True)# @UndefinedVariable
+    user_id = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
+    comment_text = Column(Text)# @UndefinedVariable
     
-    def __init__(self,user_id,user_name, post_id,text, link):
+    def __init__(self,user_id,user_name, post_id,comment_text, link):
         msg = user_name+" commented on your post"
         super(PostComment,self).__init__(user_id=user_id, msg=msg,link=link)
         self.user_id=user_id
         self.post=post_id
-        self.text=text
+        self.comment_text=comment_text
     
 class PostLike(NotificationMixin,  db.Model):
     __tablename__ = 'post_like'
-    id = Column(Integer, primary_key=True)
-    post = Column(Integer, ForeignKey('post.id'), index=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
+    id = Column(Integer, primary_key=True)# @UndefinedVariable
+    post = Column(Integer, db.ForeignKey('post.id'), index=True)# @UndefinedVariable
+    user_id = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
     
     def __init__(self,user_id,user_name, post_id, link):
         msg = user_name+" liked your post"

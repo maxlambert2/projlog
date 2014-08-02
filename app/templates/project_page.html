@@ -3,12 +3,12 @@
  {% from "_display_user_macro.html" import display_user %}
  {% from "_display_post_form.html" import display_post_form %}
   {% from "_display_post_macro.html" import display_post %}
+      {% from "_display_pic_input.html" import render_pic_input %}
 
 {% block content %}
 
 
 <div id="back_pic_container" class="project_name">
-	<div id="proj_back_pic" > 
 		{% if project.get_pic_url() %}
 			<img id="proj_back_pic" src="{{ project.get_pic_url(size='large') }}" />
 			<h1 class="with_pic">
@@ -16,7 +16,7 @@
 
 			<h1>
 	{% endif %}
-	{{project.project_name}} </h1></div>
+	{{project.project_name}} </h1>
 </div>
 <!-- <div id="proj_content"> -->
 <div id="leftcolumn" class="project">
@@ -46,10 +46,12 @@
     	     {{form.hidden_tag()}} 
     <input type="hidden" name="project_id" id="project_id" value="{{project_id}}" />
  <textarea id="post_text" name="post_text"></textarea>
-  <div class="inputWrapper" id="add_picture"> Add Picture
+  <div class="inputWrapper"> Add Picture
        <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
      </div>
-  <input type="submit" value="Update Status" class="button"/>
+         <input type="submit" value="Update Status" class="button"/>
+   <img id="preview_img" src="" />
+
  </fieldset>
       </form>
 

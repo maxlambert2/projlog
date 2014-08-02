@@ -6,7 +6,12 @@
 
 <div id="user_profile_name"> {{user.get_full_name()}}</div>
 <ul id="profile_details">
-<li>Lives in: {{user.get_location()}}</li>
+	{% if user.get_location() %}
+<li><b>Lives in:</b> {{user.get_location()}}</li>
+{% endif %}
+{% if user.about %}
+<li><b>About:</b> {{user.about}}</li>
+{% endif %}
 
 </ul>
 
@@ -14,8 +19,23 @@
 
 {% block page_center %}
 
-{% if projects.count() == 0 %}
-User has not created any projects yet.
+{% if not projects or projects.length == 0 %}
+
+	<div style="margin-top:150px;">
+
+	{% if current_user.id == user.id %}
+
+		You have not created any projects yet. <a href='/create_project'>Create a new project. </a>
+
+	{% else %}
+
+		User has not created any projects yet.
+
+	{% endif %}
+
+</div>
+
+
 {% else %}
 <div class="page_title" > Projects  </div>
 <table class="projects">
@@ -24,7 +44,7 @@ User has not created any projects yet.
 <td class="project_name">
 	<a href="{{project.get_url()}}">
 	{% if project.has_pic() %}
-	<img  class="small" src="{{project.get_pic_url(size='medium')}}" /></a>
+	<img  src="{{project.get_pic_url(size='small')}}" /></a>
  <a href="{{project.get_url()}}"><h2 class="with_pic">
 	{% else %}
 	<h2>
@@ -33,7 +53,7 @@ User has not created any projects yet.
 </a>
 </td>
 <td>
-	 {{project.goal}}
+	Goal: {{project.goal}}
 </td>
 </tr>
 {% endfor %}

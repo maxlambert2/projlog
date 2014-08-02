@@ -201,12 +201,12 @@ table.projects {
 table.projects tr {
 	background-color: #F6F6F6;
 	border-bottom: 2px solid white;
+		height: 120px; 
 }
 
 table.projects tr td {
 	border-top: 2px solid white;
 	border-left: 2px solid white;
-	height: 180px; 
 }
 
 table.projects tr td:not(.project_name){
@@ -214,19 +214,20 @@ table.projects tr td:not(.project_name){
 }
 
 
-td.project_name {
+table.projects td.project_name {
 	text-align: center;
 	position: relative;
-	width: 240px;
+	width: 200px;
+	padding: 0;
 }
 
-.project_name h1, h2{
+.project_name h1 ,.project_name h2  {
 	position: absolute;
 	font-weight: bold;
 	z-index: 5;
 	width: 100%;
 	text-align: center;
-	top:80px;
+	top:40px;
 }
 
 
@@ -235,11 +236,16 @@ td.project_name {
 }
 
 h2 {
-	font-size: 1.5em;
+	font-size: 1.2em;
+	float:left;
 }
 
 h1 {
 	font-size: 3em;
+}
+
+td {
+	padding: 10px;
 }
 
 .with_pic {
@@ -332,7 +338,7 @@ form label {
 	text-align:right;
 	font-weight: normal;
 	vertical-align: middle;
-	min-width: 110px;
+	min-width: 140px;
 	text-align: right;
 
 }
@@ -458,7 +464,7 @@ form.post_status.full_page textarea{
 	margin: 1em;
 }
 
-#add_picture {
+form.post_status div.inputWrapper {
 	clear:both;
 	font-weight: bold;
 color: #328ED9;;
@@ -578,7 +584,7 @@ form ul {
 	padding: 0.7em;
 }
 
-form ul li {
+ul li {
 	border-style: none;
 	list-style: none;
 	list-style-type: none;
@@ -586,8 +592,17 @@ form ul li {
 	vertical-align:middle;
 	clear:both;
 	overflow: auto;
+	margin-top: 0.4em;
 	/*background-color: red;*/
 }
+
+#nav ul li {
+	padding: 0;
+	margin:0;
+	clear:none;
+	overflow: visible;
+}
+
 img.tiny {
 	height: 70px;
 	width: 70px;
@@ -864,10 +879,10 @@ font-size: 1.1em;
 	padding-bottom: 10px;
 }
 
-#notif_flag{
+.notif_flag{
 	width:20px;
 	height:20px;
-	background: #FF6666;
+	background-color: #B3C0CC;
 	color: #fff;
 	padding:0px;
 	margin: 0px;
@@ -921,7 +936,7 @@ fieldset{
 	vertical-align: middle;
 }
 
-ul.dropdown li a {
+#nav ul.dropdown li a {
 	width: 100%;
 	display: block;
 	text-decoration: none;
@@ -929,7 +944,7 @@ ul.dropdown li a {
 	vertical-align: middle;
 	line-height: 30px;
 }
-ul.dropdown li a span{
+#nav ul.dropdown li a span{
 	display: block;
 	padding-left: 8px;
 	padding-right: 8px;
@@ -960,7 +975,9 @@ div#toolbar {
 	height: 20px;
 	vertical-align: middle;
 	padding-top: 3px;
-
+	margin:0;
+	clear:none;
+	overflow: visible;
 }
 
 #nav li ul {
@@ -1052,6 +1069,11 @@ padding-right: 7px;
 .med_padding_top{
 	padding-top:30px;
 
+}
+
+.tiny_pic {
+	height: 70px;
+	width: 70px;
 }
 
 .userpage_name {

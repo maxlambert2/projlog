@@ -1,5 +1,5 @@
 from app import app, db, login_manager
-from sqlalchemy.sql.expression import insert
+from sqlalchemy.sql.expression import insert, select
 import os
 from functools import wraps
 from forms import *
@@ -137,19 +137,20 @@ def edit_profile(status=None):
         status = request.args['status']
     temp_file_name = user.username
     if request.method == 'POST' and form.validate_on_submit():
-            user.username = form.username.data
-            user.first_name = form.first_name.data
-            user.last_name = form.last_name.data
-            user.location = form.location.data
-            user.gender = form.gender.data
-            user.about = form.about.data
-            user.privacy = form.privacy.data
-            file = request.files['picture']
-            if file and allowed_filename_pic(file.filename):
-                s3_filename = user.get_profile_pic_filename()
-                save_picture_s3(file,s3_filename, sizes=config.PROFILE_PIC_SIZES)    
-            db.session.add(user)  # @UndefinedVariable
-            db.session.commit()  # @UndefinedVariable
+        user.username = form.username.data
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        user.location = form.location.data
+        user.gender = form.gender.data
+        user.about = form.about.data
+        user.privacy = form.privacy.data
+        pic_file = request.files['picture']
+        if pic_file and allowed_filename_pic(pic_file.filename):
+            s3_filename = user.get_profile_pic_filename()
+            save_picture_s3(pic_file,s3_filename, sizes=config.PROFILE_PIC_SIZES)    
+        db.session.add(user)  # @UndefinedVariable
+        db.session.commit()  # @UndefinedVariable
+        return redirect(url_for('user_page',username=user.username))
     else:
         form = ProfileForm(username=user.username, 
                            first_name=user.first_name, last_name=user.last_name,
@@ -170,7 +171,7 @@ def user_page(username):
     user = User.query.filter_by(username=username).first()# @UndefinedVariable
     if user is not None:
         if user.is_viewable_by(current_user.id):
-            projects = Project.query.filter_by(created_by_id=user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+            projects = Project.query.filter_by(created_by_id=user.id).all()  # @UndefinedVariable
             return render_template('user_page.html', user=user, projects=projects)
         else: 
             request_sent = FriendRequest.query.filter_by(requester_id=current_user.id, requested_id=user.id, approved=False, ignored=False).count() > 0 # @UndefinedVariable
@@ -178,6 +179,12 @@ def user_page(username):
             return render_template('user_page_private.html', user=user, request_sent=request_sent,request_received=request_received)
     else:
         return redirect(url_for('index'))
+    
+@app.route('/my_friends')
+@login_required
+def my_friends():
+    friends = current_user.friends.all()
+    return render_template('my_friends.html',friends=friends)
     
     
 @app.route('/request_friend', methods=['POST'])
@@ -206,6 +213,9 @@ def approve_friend():
     if request.method =='POST' and form.validate_on_submit():
         requester_id = int(form.requester_id.data)
         requested_id = int(form.requested_id.data)
+#     if 'requester_id' in request.args:
+#         requester_id = request.args['requester_id']
+#         requested_id = request.args['requested_id']
         approve_request = form.approve.data
         friend_request = FriendRequest.query.filter_by(requester_id=requester_id, requested_id=requested_id, ignored=False).first()# @UndefinedVariable
         if friend_request:
@@ -232,7 +242,7 @@ def approve_friend():
 
 @app.route('/friend_requests')
 @login_required
-@notification_viewed
+@notification_viewed 
 def friend_requests():
     requests = FriendRequest.query.filter_by(requested_id=current_user.id, approved=False,ignored=False).limit(10)# @UndefinedVariable
     
@@ -330,7 +340,8 @@ def edit_project(project_id, slug):
             save_picture_s3(file, project.pic_id, config.PROJ_PIC_SIZES)   
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-        redirect(project.get_url())
+        path=project.get_path()
+        return redirect(path)
     else:
         form = ProjectForm(project_name=project.project_name, 
                            goal=project.goal,
@@ -352,7 +363,7 @@ def create_project():
                           created_by_id=current_user.id)
         db.session.add(project)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
-        return redirect(project.get_url())
+        return redirect(project.get_path())
     return render_template('create_project.html', form=form, previous_page=previous_page)
     
 

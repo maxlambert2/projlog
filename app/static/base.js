@@ -132,9 +132,7 @@ sfHover = function() {
 if (window.attachEvent) window.attachEvent("onload", sfHover);
 
 
-function approveFriendRequest(this_id, approved, requester_id, requested_id){
-
-		var this_id ='#'+this_id;
+function approveFriendRequest(this_button, approved, requester_id, requested_id){
 
 		$.ajax({
 			url:"/approve_friend",
@@ -151,13 +149,13 @@ function approveFriendRequest(this_id, approved, requester_id, requested_id){
 					} else {
 						msg = "Friend Request Ignored";
 					}
-					$(this_id).html(msg);
-					$(this_id).removeAttr("onclick");
-					$(this_id).addClass("button_disabled");
+					$(this_button).html(msg);
+					$(this_button).removeAttr("onclick");
+					$(this_button).addClass("button_disabled");
 
 				},
 				error:function(jqXHR, textStatus, error){
-					$(this_id).html("Error");
+					$(this_button).html("Error");
 				}
 			});
 

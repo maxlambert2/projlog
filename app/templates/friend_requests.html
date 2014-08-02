@@ -18,12 +18,12 @@
 			sent you a Friend Request
 		</td>
 		<td>
-				<a  class="button" id="accept_{{request.requester.id}}" onclick="approveFriendRequest({{request.requester.id}}, {{current_user.id}});"  >
+				<a  class="button" id="accept_{{request.requester.id}}" onclick="approveFriendRequest(this, true, {{request.requester.id}}, {{current_user.id}});"  >
 				Accept
 			</a>
 		</td>
 		<td>
-				<a class="button"  id="ignore_{{request.requester.id}}" onclick="ignoreFriendRequest({{request.requester.id}}, {{current_user.id}});" >
+				<a class="button"  id="ignore_{{request.requester.id}}" onclick="approveFriendRequest(this, false, {{request.requester.id}}, {{current_user.id}});" >
 				Ignore
 			</a>
 		</td>

@@ -46,7 +46,7 @@ POST_PIC_SIZES ={'large': LARGE_PIC_DIM,
                  'small' : SMALL_PIC_DIM }
 
 PROJ_PIC_SIZES = {'large':COVER_PIC_DIM,
-                  'small':SMALL_PIC_DIM,
+                  'small':(200,120),
                   'medium':(240,180),
                   'tiny': TINY_PIC_DIM }
 

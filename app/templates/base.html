@@ -11,12 +11,13 @@
 		<title> {% block title %} Projlog {% endblock title %} </title>
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		<script type="text/javascript" >
-		var csrftoken = $('meta[name=csrf-token]').attr('content');
 			$(document).ajaxSend(function(event, jqxhr, settings) {
+				var csrftoken = $('meta[name=csrf-token]').attr('content');
         		if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-            jqxhr.setRequestHeader("X-CSRFToken", csrftoken)
+            jqxhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
-		});</script>
+		});
+			  </script>
 	<script type="text/javascript" src="{{ url_for('static', filename='base.js') }}" ></script>
 		{% block javascript %}   {% endblock javascript %}
 	</head>
@@ -34,9 +35,12 @@
 	 		
 	 		<ul id="nav">
 
-		{% if current_user.has_notifications() > 0 %}
 		 	<li > 
-		 		<a href="#" id="notif_flag" >
+		 		<a href="#" id="notif_flag" class="notif_flag" 
+				{% if current_user.has_notifications() > 0 %}
+				style="background-color:#FF6666"
+				{% endif %}
+		 		>
 		 	<span>{{ current_user.notification_count() }}</span>
 		 		</a>
 			 	<ul id="notif_dropdown" class="dropdown">
@@ -48,7 +52,7 @@
 			 		{% endfor %}
 				 </ul>
 			</li>
-	 	{% endif %}
+	 	
 
 		 <li><a href="/"> home </a></li>
 		<li><a  href="{{current_user.get_profile_url()}}"> {{current_user.username}}</a></li>
