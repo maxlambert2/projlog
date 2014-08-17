@@ -55,7 +55,7 @@ class SignupForm(Form):
          
     
 class ProjectForm(Form):
-    project_name = TextField('Project Name*', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
+    project_name = TextField('Title', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
     goal = TextAreaField('Goal')
     privacy = SelectField('Privacy Setting', validators = [Required()], 
                                   choices=[('0', 'Public'), 
@@ -82,7 +82,7 @@ class ProjectForm(Form):
     
 class PostForm(Form):
     post_text = TextAreaField('',validators = [Required()])
-#     project = SelectField('Project')
+    project_id = SelectField(u'Project', coerce=int)
 #     ##picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
 #     
 #     def __init__(self, formdata=None, obj=None, prefix='', user_id=None, **kwargs):

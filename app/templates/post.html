@@ -8,16 +8,8 @@
 
         {{form.hidden_tag()}} 
 <ul>
-  <li>
-      <label for="project_id"> Project: </label>
-          <select name="project_id" id="project_id" >
-              {% for project in projects %}
-              <option value="{{project.id}}">{{project.project_name}}</option>
-              {% endfor %}
-          </select>
-        </li>
-
-         {{ render_field(form.post_text) }} 
+  {{ render_field(form.project_id) }} 
+  {{ render_field(form.post_text) }} 
 
 </ul>
 <!--   <div class="inputWrapper" id="add_picture"> Add Picture

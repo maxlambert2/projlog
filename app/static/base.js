@@ -87,6 +87,67 @@ function addFriend(requester_id, requested_id){
 return false;
 }
 
+function stripTags(input_str){
+	var StrippedString = input_str.replace(/(<([^>]+)>)/ig,"");
+	return StrippedString;
+}
+
+function openComment(post_id){
+	var comment_id = '#new_comment'+post_id.toString();
+	$(commend_id).css({'display':'inline-block' });
+}
+
+function postComment(post_id){
+
+	var post_id_str = post_id.toString();
+	var comment_text_id = '#new_comment_text'+ post_id_str;
+	var comment_div_id = '#new_comment' + post_id_str;
+	var comment_row_id = '#new_comment_tr'+ post_id_str;
+	var comment_username = '#new_comment_username'+post_id_str;
+	var comment_button_id = '#new_comment_button'+post_id_str;
+
+	var user_id = userdata['user_id'].toString();
+	var user_thumbnail_url = userdata['user_thumbnail_url'];
+	var user_profile_url = userdata['user_profile_url'];
+	var user_fullname = userdata['user_fullname'];
+
+	comment_text = $.trim($(comment_text_id).val());
+
+	if (comment_text !== '') {
+
+			$.ajax({
+				url:"/post_comment",
+				type:"POST",
+				data:{user_id: user_id, comment_text: comment_text, post_id:post_id},
+					success:function(data)
+					{   
+						var result = $.parseJSON(data);
+						var new_comment_id = result['comment_id'];
+						$(comment_text_id).empty();  //remove new comment text inside textarea
+						var comment_empty_tr = $(comment_row_id).html();  //take a snapshot of the empty comment form so we can add it back
+						$(comment_text_id).remove();  //empty comment form and post button
+						$(comment_button_id).remove();
+						$(comment_div_id).append(comment_text); //set text inside empty comment row
+
+						var new_comment_div_id = 'comment'+new_comment_id
+						$(comment_div_id).attr('id', new_comment_div_id);
+						$(comment_username).css('display','inline-block'); //add user thumbnail
+						$(comment_username).removeAttr('id');
+						var added_row_id = 'comment_tr'+new_comment_id;
+						$(comment_row_id).attr('id', added_row_id); //reset id of comment row
+						var added_row_id_key = '#'+added_row_id;
+						var new_comment_form_html = "<tr id='new_comment_tr"+post_id_str+"'>"+comment_empty_tr+"</tr>";  //html for new comment form box
+						$(added_row_id_key).after(new_comment_form_html);  //add new comment form box
+					},
+					error:function(jqXHR, textStatus, error){
+							alert(textStatus.toString());
+					}
+				});
+	return true;
+		
+	}
+}
+
 
 function mouseover()
 {

@@ -3,6 +3,8 @@
 
 
 {% block content %}
+<div id="main">
+
 		<div id="profile_summary">
 			{% block profile_summary %}
 			<img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
@@ -17,7 +19,7 @@
 		{% endblock %}
 
 </div>
-
+</div>
 
 
 {% endblock content %}

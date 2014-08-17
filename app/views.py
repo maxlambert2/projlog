@@ -7,7 +7,7 @@ from flask import render_template, flash, redirect , Flask, url_for, request, g,
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from models import  FriendRequest, friendships, Notification, Post, Project
+from models import  FriendRequest, friendships, Notification, Post, PostComment
 import config
 from file_lib import *
 import time, base64, urllib, json, hmac
@@ -137,10 +137,10 @@ def edit_profile(status=None):
         status = request.args['status']
     temp_file_name = user.username
     if request.method == 'POST' and form.validate_on_submit():
-        user.username = form.username.data
-        user.first_name = form.first_name.data
-        user.last_name = form.last_name.data
-        user.location = form.location.data
+        user.username = form.username.data.lower()
+        user.first_name = form.first_name.data.lower().capitalize()
+        user.last_name = form.last_name.data.lower().capitalize()
+        user.location = form.location.data.lower().capitalize()
         user.gender = form.gender.data
         user.about = form.about.data
         user.privacy = form.privacy.data
@@ -266,21 +266,22 @@ def user_profile_pic_page(username):
 @login_required
 def post():
     form = PostForm()
-    if request.method =='POST' and form.validate_on_submit() and 'project_id' in request.form.keys():
+    user_id = current_user.id
+    form.project_id.choices = [(p.id,p.project_name) for p in Project.query.filter_by(created_by_id=current_user.id).order_by(Project.created_date.desc()).limit(config.PROJ_LIST_LIMIT)]  # @UndefinedVariable
+    if request.method =='POST' and form.validate_on_submit():
         project_id = int(request.form['project_id'])
         project = Project.query.get(project_id) # @UndefinedVariable
         if current_user.id == project.created_by_id:
             file=request.files['picture']
             create_post(project_id, current_user.id, form.post_text.data, file)
             return redirect(url_for('index'))
-    user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
-    return render_template('post.html',form=form, projects=user_projects)
+    return render_template('post.html',form=form)
             
 
 def create_post(project_id, user_id, post_text, pic_file):
     post = Post(created_by_id=user_id,
                         project_id=project_id,
-                        text=post_text
+                        post_text=post_text
                         )
     if pic_file:
         s3_filename = generate_filename(current_user.username)
@@ -305,6 +306,35 @@ def ajax_post():
             create_post(project_id, user_id, post_text, pic_file)
             return "Success"
     return "Error: Form Validation"
+
+@app.route('/post_comment', methods=['GET', 'POST'])  
+def post_comment():
+    if request.method =='POST':
+        user_id = int(request.form['user_id'])
+        post_id = int(request.form['post_id'])
+        comment_text = request.form['comment_text']
+    else:
+        user_id = int(request.args['user_id'])
+        post_id = int(request.args['post_id'])
+        comment_text = request.args['comment']
+    comment_text = comment_text.strip()
+    user = User.query.get(user_id)# @UndefinedVariable
+    post = Post.query.get(post_id)# @UndefinedVariable
+    if user and post:
+        project = Project.query.get(post.project_id)
+        url = project.get_url() 
+        comment = PostComment(user_id=user_id,post_id=post_id, 
+                    comment_text=comment_text)
+        db.session.add(comment)# @UndefinedVariable
+        db.session.flush() # @UndefinedVariable
+        notif_msg = user.get_full_name() +" commented on your post"
+        dom_element_id = 'comment'+str(comment.id)
+        notif = Notification(message=notif_msg, user_id=user_id, url=url, dom_element_id=dom_element_id)
+        db.session.add(notif)# @UndefinedVariable
+        db.session.commit()# @UndefinedVariable
+        return '{"success":true,"comment_id":"'+str(comment.id)+'"}'
+    else:
+        return "{'success':false, 'error_msg':'Invalid user or post', 'post_id':"+str(post_id)+", 'user_id':"+str(user_id)+"}"
 
 @app.route('/project/<project_id>/<slug>/', methods=['GET', 'POST'])
 @login_required

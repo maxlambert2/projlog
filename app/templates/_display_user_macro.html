@@ -4,3 +4,10 @@
 		<a href="{{user.get_profile_url()}}" class="small_pic_caption">{{user.get_full_name()}}</a>
 </div>
 {% endmacro %}
+
+{% macro display_user_thumbnail(user) %}
+<div class="user_thumbnail"> 
+		<a href="{{user.get_profile_url()}}"><img class='thumbnail' src="{{user.get_thumbnail_url()}}" /></a>
+		<a href="{{user.get_profile_url()}}" class="thumbnail_label">{{user.get_full_name()}}</a>
+</div>
+{% endmacro %}

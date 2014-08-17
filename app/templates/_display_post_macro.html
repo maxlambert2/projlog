@@ -1,4 +1,7 @@
-{% macro display_post(post) %}
+   {% from "_display_user_macro.html" import display_user_thumbnail %}
+
+{% macro display_post(post, current_user = '') %}
+<div class="post_container">
 	<div class="post">
 		<div class="post_header">
 			<a src="{{post.created_by.get_profile_url()}}"><img class="thumbnail" src="{{post.created_by.get_thumbnail_url()}}" />
@@ -8,13 +11,51 @@
 			</a>
 			<div class="date">
 				{{post.get_created_date_str()}}
-				</div>
+			</div>
 	</div>
 		<div class="post_content">
-			{{post.text}}
+			{{post.post_text}}
 		</div>
 		{% if post.get_pic_url() %}
 				<img class="post" src="{{post.get_pic_url(size='large')}}" />
 		{% endif %}
+
+	<div class="post_footer">	
+		<a class='comment_link' onclick="openComment({{post.id}})">Comment</a>
 	</div>
+</div>
+	<div class="comment_box" id="comments_container{{post.id}}">
+		<table>
+		{% for comment in post.comments %}
+		<tr id="comment_tr{{comment.id}}">
+			<td>
+			<!-- <div class="comment" id="comment{{comment.id}}" data-commentseq="{{comment.seq}}"> -->		
+			<a href="{{comment.user.get_profile_url()}}"><img class='thumbnail' src="{{comment.user.get_thumbnail_url()}}" /></a>
+			</td>
+			<td>
+				<div class='comment_text' id="comment{{comment.id}}">	
+			<a href="{{comment.user.get_profile_url()}}" class="thumbnail_label">{{comment.user.get_full_name()}}</a>
+						{{comment.comment_text}}
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+		{% if current_user != '' %}
+		<tr id="new_comment_tr{{post.id}}">
+			<td>
+				<a href="{{current_user.get_profile_url()}}"><img class='thumbnail' src="{{current_user.get_thumbnail_url()}}" /></a>
+			</td>
+			<td>
+					<div id ="new_comment{{post.id}}" class="comment_text" >
+				<a id="new_comment_username{{post.id}}" style="display:none;" href="{{current_user.get_profile_url()}}" class="thumbnail_label">{{current_user.get_full_name()}}</a>
+					<textarea id='new_comment_text{{post.id}}' placeholder="write comment..." ></textarea>
+					<a class="button" id="new_comment_button{{post.id}}" onclick="postComment({{post.id}})">Post</a>
+				</div>
+			</td>
+		</tr>
+		{% endif %}
+	</table>
+	</div>
+</div>
 {% endmacro %}
+

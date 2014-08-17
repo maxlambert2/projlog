@@ -56,7 +56,7 @@ class User(db.Model):
     location = Column(String(30))# @UndefinedVariable
     gender = Column(String(1))# @UndefinedVariable
     profile_pic_id = Column(String(60))# @UndefinedVariable
-    about = Column(db.Text)# @UndefinedVariable
+    about = Column(Text)# @UndefinedVariable
     follows = db.relationship('User', # @UndefinedVariable
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
@@ -73,6 +73,7 @@ class User(db.Model):
 
     projects = db.relationship('Project', backref='created_by')# @UndefinedVariable
     posts = db.relationship('Post', backref='created_by')# @UndefinedVariable
+    comments = db.relationship('PostComment', backref='user')# @UndefinedVariable
     
 
     def __init__(self, username, email,password):
@@ -260,10 +261,11 @@ class Project(db.Model):
     created_by_id = Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
     project_name = Column(String(50))# @UndefinedVariable
     goal = Column(String(200))# @UndefinedVariable
+    type = Column(String(20))
     slug = Column(String(30))# @UndefinedVariable
     comments=Column(Text)# @UndefinedVariable
     pic_id = Column(String(100))# @UndefinedVariable
-    posts = db.relationship('Post',  lazy = 'dynamic')# @UndefinedVariable
+    posts = db.relationship('Post',  lazy = 'dynamic', backref='project')# @UndefinedVariable
     members = db.relationship('ProjectMember')# @UndefinedVariable
     
     def __init__(self, project_name, goal, created_by_id, privacy):
@@ -336,20 +338,25 @@ class Notification(db.Model):
     created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
     user_id =  Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
     message = Column(String(150))# @UndefinedVariable
-    link = Column(String(100))# @UndefinedVariable
+    url = Column(String(100))# @UndefinedVariable
+    dom_element_id = Column(String(30))
     seen = Column(Boolean, default=False)# @UndefinedVariable
         
-    def __init__(self, user_id, message, link):
+    def __init__(self, user_id, message, url, dom_element_id=''):
         self.message=message
         self.user_id=user_id
-        self.link=link
+        self.url=url
+        self.dom_element_id = dom_element_id
         
-    def get_link(self):
-        return self.link+"?nid="+str(self.id)
+    def get_url(self):
+        full_url = self.url+"?nid="+str(self.id)
+        if self.dom_element_id is not None:
+            full_url = full_url +'#'+self.dom_element_id
+        return full_url
         
 class NotificationMixin(object):
-    def __init__(self,user_id, msg, link):
-        notif = Notification(user_id=user_id, message =msg,link=link)
+    def __init__(self,user_id, msg, url, dom_element_id=''):
+        notif = Notification(user_id=user_id, message =msg,url=url, dom_element_id=dom_element_id)
         db.session.add(notif)  # @UndefinedVariable
 
 
@@ -367,8 +374,8 @@ class FriendRequest(NotificationMixin, db.Model):
     def __init__(self,requester_id, requested_id):
         requester = User.query.get(requester_id)
         msg = requester.get_full_name()+" sent you a friend request"
-        link = "/friend_requests"
-        super(FriendRequest,self).__init__(user_id=requested_id, msg=msg,link=link)
+        url = "/friend_requests"
+        super(FriendRequest,self).__init__(user_id=requested_id, msg=msg,url=url)
         self.requester_id = requester_id
         self.requested_id = requested_id
             
@@ -378,9 +385,9 @@ class Post(db.Model):
     created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
     created_by_id =  Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
     project_id = Column(Integer, db.ForeignKey('project.id'), index=True)# @UndefinedVariable
-    db.Text = Column(db.Text())# @UndefinedVariable
+    post_text = Column(Text)# @UndefinedVariable
     pic_id = Column(String(80))# @UndefinedVariable
-    comments = db.relationship('PostComment',  lazy='dynamic')# @UndefinedVariable
+    comments = db.relationship('PostComment',  lazy='dynamic', backref='post')# @UndefinedVariable
     likes = db.relationship('PostLike', lazy='dynamic')# @UndefinedVariable
     
     def get_pic_url(self,size='large'):
@@ -403,19 +410,17 @@ class Post(db.Model):
             return str(minutes)+ ' minutes ago'
             
     
-class PostComment(NotificationMixin, db.Model):
+class PostComment( db.Model):
     __tablename__ = 'post_comment'
     id = Column(Integer, primary_key=True)# @UndefinedVariable
     created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
-    post = Column(Integer, db.ForeignKey('post.id'), index=True)# @UndefinedVariable
+    post_id = Column(Integer, db.ForeignKey('post.id'), index=True)# @UndefinedVariable
     user_id = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
     comment_text = Column(Text)# @UndefinedVariable
     
-    def __init__(self,user_id,user_name, post_id,comment_text, link):
-        msg = user_name+" commented on your post"
-        super(PostComment,self).__init__(user_id=user_id, msg=msg,link=link)
+    def __init__(self,user_id, post_id,comment_text):
         self.user_id=user_id
-        self.post=post_id
+        self.post_id=post_id
         self.comment_text=comment_text
     
 class PostLike(NotificationMixin,  db.Model):
@@ -424,9 +429,9 @@ class PostLike(NotificationMixin,  db.Model):
     post = Column(Integer, db.ForeignKey('post.id'), index=True)# @UndefinedVariable
     user_id = Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
     
-    def __init__(self,user_id,user_name, post_id, link):
+    def __init__(self,user_id,user_name, post_id, url):
         msg = user_name+" liked your post"
-        super(PostLike,self).__init__(user_id=user_id, msg=msg,link=link)
+        super(PostLike,self).__init__(user_id=user_id, msg=msg,url=url)
         self.user_id=user_id
         self.post=post_id
 

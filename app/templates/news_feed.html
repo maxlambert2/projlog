@@ -24,7 +24,7 @@
       <div style="text-align:left;padding-left:50px;padding-top:40px;">  Add friends to see their project updates </div>
       {% else %}
         {% for feed_post in posts %}
-          {{ display_post(feed_post) }}
+          {{ display_post(feed_post, current_user) }}
         {% endfor %}
       {% endif %}
       </div>

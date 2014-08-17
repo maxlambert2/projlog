@@ -16,6 +16,10 @@ margin:0px;
 padding:0px;
 }
 
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+ }
+
 html {
 	overflow: auto;
 	height:100%;
@@ -34,7 +38,8 @@ cursor: pointer;
 text-decoration:none;  
 border-style:none;
 color: #328ED9;
-text-decoration: none !important;
+text-decoration: none;
+font-weight: bold;
 } 
 
 body { 
@@ -50,7 +55,7 @@ body {
 }
 
 div#header{
-	height:35px;
+	height:39px;
 	/*background-color:#E9EEF7;*/
 	padding: 2px;
 	border-bottom: 1px;
@@ -110,7 +115,7 @@ font-style: bold;
 }
 
 #leftcolumn {
-width:179px;
+width:200px;
 float:left;
 min-height:400px;
 padding: 10px;
@@ -139,7 +144,6 @@ width:700px;
 margin-left: 200px;
 min-height: 600px;
 text-align: center;
-padding:10px;
 }
 
 #profile_center{
@@ -156,6 +160,7 @@ display: table;
 padding: 15px;
 float: left;
 }
+
 
 #rightcolumn.project {
 	width: 700px;
@@ -244,9 +249,6 @@ h1 {
 	font-size: 3em;
 }
 
-td {
-	padding: 10px;
-}
 
 .with_pic {
 	color: white;
@@ -326,7 +328,6 @@ input,textarea, select  {
 	border-width:1px;
 	border-color:#0066CC;
 	float:left;
-	margin-top: 2px;
 	text-align: left;
 }
 
@@ -359,13 +360,13 @@ label.remember {
 	font-weight:normal;
 	font-size: 1em;
 	color:white;
-	padding:0.6em 0.8em;
-	margin:4px 10px;
+	padding: 0.5em 0.7em;
+	margin:0.5em 0.8em;
 	clear:none;
 	display: inline-block; 
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	-khtml-border-radius: 4px;
+	-moz-border-radius: 0.3em;
+	-webkit-border-radius: 0.3em;
+	-khtml-border-radius: 0.3em;
 	border-bottom-style:1px solid black;
 	border-left-style: none;
 	border-top: 1px solid #99ADEB;
@@ -378,7 +379,9 @@ label.remember {
 	border:1px solid #328ED9;
 }
 
-
+div.comment a.button {
+	font-size: 0.8em;
+}
 
 form {
 	padding: 10px;
@@ -483,19 +486,37 @@ margin-top: 5px;
 }
 
 div.post {
-	width: 640px;
 	position: relative;
 	float:left;
 	clear: both;
-	padding: 0.8em;
-	margin-left: 10px;
-	margin-bottom: 10px;
+	padding: 10px;
+	padding-bottom: 5px;
 	background-color: white;
 	border:1px solid #CCCCCC;
+	width: 100%;
+}
+
+.post_container {
+	margin-bottom: 20px;
+	width: 100%;
+}
+
+
+.comment_box {
+	margin-left: 1em;
+	background-color: white;
+	display: inline-block;
+}
+
+div.comment {
+	display:inline-block;
+	width:400px;
+	clear:both;
+	float: left;
+	padding: 0.5em;
 }
 
 #leftcolumn ul li {
-	padding:0.8em;
 	 overflow: auto;
 	 text-align: left;
 	 clear: both;
@@ -607,25 +628,23 @@ img.tiny {
 	height: 70px;
 	width: 70px;
 }
+
 .user_display {
 	width: 120px;
 	text-align: center;
 	float: left;
 }
-.small_pic_caption {
-	padding: 5px;
-	display: block;
-}
 
-.user_thumbnail a {
-	clear: both;
-	display: block;
-	padding: 3px;
+
+.user_thumbnail {
+	float:left;
+	display: inline-block;
+	height: 35px;
+	margin: 5px;
 }
 
 .thumbnail_label {
-	margin-top: 40px;
-	float: left;
+	/*margin-right: 5px;*/
 }
 
 .date {
@@ -633,6 +652,10 @@ img.tiny {
 	color: #B8B8B8;
 }
 
+.comment_text {
+	width: 350px;
+	margin: 5px;
+}
 
 .post img.thumbnail {
 	float: left;
@@ -690,13 +713,16 @@ input#signup_button {
 }
 
 .news_feed {
-	padding: 10px;
 	text-align: left;
 	width: 700px;
-	display: block;
+	height: 100%;
+	display: inline-block;
+	padding: 15px;
 }
 
-
+.new_comment {
+	display: none;
+}
 
 input[type="radio"] {
 	float: left;
@@ -780,10 +806,14 @@ input[type="file"] {
 	display: block;
 	height: 30px;
 }
+
+.comment_link {
+	font-size: 0.8em;
+}
 .post_content {
 	margin-top: 10px;
 	min-height: 1.5em;
-	padding-top: 0.6em;
+	padding: 1em 0.3em;
 }
 
 img.post {
@@ -1058,7 +1088,12 @@ div.choices {
 }
 
 .thumbnail {
-padding-right: 7px;
+height: 35px;
+margin: 7px;
+}
+
+.comment_box .thumbnail{
+	margin: 5px 0px 5px 10px;
 }
 
 .thumbnail .user_name {
@@ -1112,5 +1147,15 @@ a.prev_page_link{
 .vote_icon {
 	display:inline;
 	margin:0px 2px;
+}
+
+.clearfix:after {
+clear: both;
+content: ".";
+display: block;
+font-size: 0;
+height: 0;
+line-height: 0;
+visibility: hidden;
 }
 
