@@ -6,72 +6,77 @@
 
 {% block content %}
 
-<div id="main">
+<div id="main" class='clearfix'>
 
 <div id="back_pic_container" class="project_name">
 		{% if project.get_pic_url() %}
 			<img id="proj_back_pic" src="{{ project.get_pic_url(size='large') }}" />
-			<h1 class="with_pic">
+			<h1 class="with_pic">{{project.project_name}} </h1>
 		{% else %}
-
-			<h1>
+			<div id="proj_back_pic"> <h1>{{project.project_name}} </h1></div>
 	{% endif %}
-	{{project.project_name}} </h1>
+	
 </div>
-<!-- <div id="proj_content"> -->
-<div id="leftcolumn" class="project">
+<div id="proj_content" class="clearfix"> 
+	<div id="leftcolumn" class="project">
 
-	<ul>
+		<ul>
+			{% if current_user and project.created_by_id == current_user.id %}
+		<li>
+			<a href="edit" class="edit_link">Edit Project</a>
+	</li>
+		{% endif %}
+
+			<li>
+		<span style="float:left;padding-top:30px;" > Created by </span> 
+		{{ display_user(project.created_by) }}
+		</li>
+
+			<li>
+		<b>Goal:</b>	{{project.goal}}
+		</li>
+		<li>
+		<b>Comments</b><br>
+		<br>	{{project.comments}}
+		</li>
+	</ul>
+	</div>
+
+	<div id="rightcolumn" class="project">
 		{% if current_user and project.created_by_id == current_user.id %}
-	<li>
-		<a href="edit" class="edit_link">Edit Project</a>
-</li>
-	{% endif %}
+			 <form class="post_status" action="" method="post" enctype=multipart/form-data  name="post_status" >
+	    <fieldset>
+	    	     {{form.hidden_tag()}} 
+	    <input type="hidden" name="project_id" id="project_id" value="{{project.id}}" />
+	 <textarea id="post_text" name="post_text" placeholder="write post..."></textarea>
+	  <div class="inputWrapper"> Add Picture
+	       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
+	     </div>
+	         <input type="submit" value="Submit" class="button"/>
+	   <img id="preview_img" src="" />
 
-		<li>
-	<span style="float:left;padding-top:30px;" > Created by </span> 
-	{{ display_user(project.created_by) }}
-	</li>
+	 </fieldset>
+	      </form>
 
-		<li>
-	Goal:	{{project.goal}}
-	</li>
-</ul>
-</div>
+		{% endif %}
 
-<div id="rightcolumn" class="project">
-	{% if current_user and project.created_by_id == current_user.id %}
-		 <form class="post_status" action="" method="post" enctype=multipart/form-data  name="post_status" >
-    <fieldset>
-    	     {{form.hidden_tag()}} 
-    <input type="hidden" name="project_id" id="project_id" value="{{project_id}}" />
- <textarea id="post_text" name="post_text" placeholder="write post..."></textarea>
-  <div class="inputWrapper"> Add Picture
-       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
-     </div>
-         <input type="submit" value="Submit" class="button"/>
-   <img id="preview_img" src="" />
+			{% for post in posts %}
+				{{ display_post(post, current_user) }}
+			{% endfor %}
 
- </fieldset>
-      </form>
+	    {% if next_page %}
+	      <div class="more_posts">
+	            {% if last_page %}
+	              <a href="?page={{last_page}}" class="page_direction">Last Posts </a>
+	            {% endif %}
+	        <a href="?page={{next_page}}" class="page_direction"> Next Posts </a>
+	      </div>
+	    {% endif %}
 
-	{% endif %}
-
-		{% for post in posts %}
-			{{ display_post(post, current_user) }}
-		{% endfor %}
-
-    {% if next_page %}
-      <div class="more_posts">
-            {% if last_page %}
-              <a href="?page={{last_page}}" class="page_direction">Last Posts </a>
-            {% endif %}
-        <a href="?page={{next_page}}" class="page_direction"> Next Posts </a>
-      </div>
-    {% endif %}
-
-</div>
-
+	</div>
+<br class="clearfloats" />;
+	</div>
+<br class="clearfloats" />;
 </div>
 
 {% endblock content %}

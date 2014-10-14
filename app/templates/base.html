@@ -18,12 +18,13 @@
 		});
 			  </script>
 			  <script type="text/javascript" >
-
+			 {% if current_user.id %} 
 			  var userdata = {'user_id': '{{current_user.id}}', 
 			  'user_thumbnail_url': '{{current_user.get_thumbnail_url()}}',
 			  'user_fullname': '{{current_user.get_full_name()}}',
 			  'user_profile_url': '{{current_user.get_profile_url()}}',
 			}
+			{% endif %}
 
 			  </script>
 	<script type="text/javascript" src="{{ url_for('static', filename='base.js') }}" ></script>
@@ -34,7 +35,7 @@
 	
 <div id="header">
   <a id="logo"  class="toolbar_link" href="/"><img src="{{config.LOGO_URL}}" /></a> 
- <div id="moto" > A Project Log For All Your Personal Projects </div>
+ <div id="moto" >  </div>
 
  {% if current_user.username %} 
 

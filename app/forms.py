@@ -33,6 +33,7 @@ class LoginForm(Form):
     
 class SignupForm(Form):
     username = TextField('Username', [Length(min=2, max=30)])
+    first_name = TextField('First Name', [Length(min=2, max=40)])
     email = TextField('Email', [Length(min=6, max=40)])
     password = PasswordField('Password', [
         Required()
@@ -42,25 +43,30 @@ class SignupForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
+        if self.username.data in config.INVALID_USERNAMES:
+            self.username.errors.append( "Username already in use. Please pick another one")
+            return False
         existing_email =  User.query.filter_by(email=self.email.data).first()  # @UndefinedVariable
         if existing_email is not None:
             self.email.errors.append( "Email already in use")
             return False
         existing_username = User.query.filter_by(username=self.username.data).first()  # @UndefinedVariable
         if existing_username is not None:
-            self.username.errors.append( "Username already in use")
+            self.username.errors.append( "Username already in use. Please pick another one")
             return False
         return True
             
-         
+
     
 class ProjectForm(Form):
+    category = SelectField('Category', validators = [Required()],
+                           choices =config.PROJECT_CATEGORIES)
     project_name = TextField('Title', validators = [Required(), Length(min=config.PROJ_NAME_MIN_LENGTH, max=config.PROJ_NAME_MAX_LENGTH)])
     goal = TextAreaField('Goal')
     privacy = SelectField('Privacy Setting', validators = [Required()], 
                                   choices=[('0', 'Public'), 
-                                           ('1', 'Friends Only')]
-                                           ## ('2', 'Private (Select Friends Only)')]
+                                           ('1', 'ProjLog Friends Only'),
+                                            ('2', 'Private (Project Members Only)')]
                                   )
     comments = TextAreaField('Comments')
     
@@ -82,7 +88,7 @@ class ProjectForm(Form):
     
 class PostForm(Form):
     post_text = TextAreaField('',validators = [Required()])
-    project_id = SelectField(u'Project', coerce=int)
+    ##project_id = SelectField(u'Project', coerce=int)
 #     ##picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
 #     
 #     def __init__(self, formdata=None, obj=None, prefix='', user_id=None, **kwargs):
@@ -90,6 +96,9 @@ class PostForm(Form):
 #             projects = Project.query.filter_by(created_by_id = user_id).limit(config.PROJ_LIST_LIMIT) # @UndefinedVariable
 #             self.project.choices = projects
 #         Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+class PostProjectForm(PostForm):
+    project_id = SelectField(u'Project', coerce=int)
 
 class PostFormAjax(PostForm):
     user_id = IntegerField('user_id', validators = [Required()])  
@@ -106,7 +115,7 @@ class FriendApproveForm(Form):
 
 class ProfileForm(Form):
     username = TextField('Username', validators = [Required(), Length(min=2, max=40)])
-    first_name = TextField('First Name', validators = [Length(max=40)])
+    first_name = TextField('First Name or Nickname', validators = [Length(max=40)])
     last_name = TextField('Last Name', validators = [Length(max=40)])
     #profile_pic = FileField(u'Change Profile Picture', [regexp(u'^.*\.(jpg|JPG|png|PNG|jpeg|JPEG|gif|GIF)$')])
     location = TextField('Location', validators = [Length(max=40)])

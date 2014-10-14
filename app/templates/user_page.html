@@ -10,7 +10,9 @@
 <li><b>Lives in:</b> {{user.get_location()}}</li>
 {% endif %}
 {% if user.about %}
-<li><b>About:</b> {{user.about}}</li>
+<li><b>About:</b>
+ <br>{{user.about}}
+</li>
 {% endif %}
 
 </ul>
@@ -24,36 +26,32 @@
 	<div style="margin-top:150px;">
 
 	{% if current_user.id == user.id %}
-
 		You have not created any projects yet. <a href='/create_project'>Create a new project. </a>
-
 	{% else %}
-
 		User has not created any projects yet.
-
 	{% endif %}
 
-</div>
+	</div>
 
 
 {% else %}
-<div class="page_title" > Projects  </div>
+<h2 class="page_title" > Projects  </h2>
 <table class="projects">
 {% for project in projects %}
 <tr>
-<td class="project_name">
-	<a href="{{project.get_url()}}">
-	{% if project.has_pic() %}
-	<img  src="{{project.get_pic_url(size='small')}}" /></a>
- <a href="{{project.get_url()}}"><h2 class="with_pic">
-	{% else %}
-	<h2>
-	{% endif %}
-	{{project.project_name}}</h2></a>
+
+<td class="project_name gray-back">
+	<a href="{{project.get_url()}}"><h2>{{project.project_name}}</h2></a>
 </a>
 </td>
-<td>
-	Goal: {{project.goal}}
+	<td class='small_pic gray-back'>
+	{% if project.has_pic() %}
+	 <a href="{{project.get_url()}}"><img  src="{{project.get_pic_url(size='small')}}" /></a>
+	{% endif %}
+	</td>
+
+<td class="goal gray-back">
+	<b>Goal:</b> {{project.goal}}
 </td>
 </tr>
 {% endfor %}

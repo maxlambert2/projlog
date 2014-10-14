@@ -1,18 +1,24 @@
    {% from "_display_user_macro.html" import display_user_thumbnail %}
 
-{% macro display_post(post, current_user = '') %}
+{% macro display_post(post, current_user = '', show_project_name=False) %}
 <div class="post_container">
 	<div class="post">
-		<div class="post_header">
-			<a src="{{post.created_by.get_profile_url()}}"><img class="thumbnail" src="{{post.created_by.get_thumbnail_url()}}" />
-			<div class="bold">
-				{{post.created_by.get_full_name()}}
-			</div>
-			</a>
+		<div class="post_header clearfix">
+			<a href="{{post.created_by.get_profile_url()}}"><img class="thumbnail" src="{{post.created_by.get_thumbnail_url()}}" /></a>
+			<div class="post_header_text">
+				<a href="{{post.created_by.get_profile_url()}}"> {{post.created_by.get_full_name()}}</a>
+						{% if post.type_id == 2 %}
+					created new project
+					{% else %}
+					updated project
+					{% endif %}
+					<a href="{{post.project.get_url()}}"> {{post.project.project_name}}</a>
+				
+				</div>
 			<div class="date">
 				{{post.get_created_date_str()}}
 			</div>
-	</div>
+		</div>
 		<div class="post_content">
 			{{post.post_text}}
 		</div>
@@ -21,7 +27,7 @@
 		{% endif %}
 
 	<div class="post_footer">	
-		<a class='comment_link' onclick="openComment({{post.id}})">Comment</a>
+		<a class='comment_link' href="#new_comment{{post.id}}">Comment</a>
 	</div>
 </div>
 	<div class="comment_box" id="comments_container{{post.id}}">
@@ -36,6 +42,9 @@
 				<div class='comment_text' id="comment{{comment.id}}">	
 			<a href="{{comment.user.get_profile_url()}}" class="thumbnail_label">{{comment.user.get_full_name()}}</a>
 						{{comment.comment_text}}
+				</div>
+								<div class="date">
+				{{comment.get_created_date_str()}}
 				</div>
 			</td>
 		</tr>

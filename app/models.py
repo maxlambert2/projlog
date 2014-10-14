@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from  app import db
 from sqlalchemy import Text, Integer, DateTime, String, Boolean, SmallInteger, Column
-import md5
+import hashlib
 from file_lib import get_s3_url, generate_filename, resize_and_crop
 import config
 import unicodedata
@@ -13,6 +13,19 @@ from datetime import datetime, timedelta
 
 #import String
 #import random
+
+def date_to_str(date_in):
+    diff = datetime.now()-date_in
+    if diff.days > 10:
+        return date_in.strftime("%B %d, %Y")
+    if diff.days > 1:
+        return str(int(diff.days)) +' days ago'
+    elif diff.seconds > 3600:
+        hours = int(round(diff.seconds/3600,0))
+        return str(hours)+ ' hours ago'
+    else:
+        minutes = int(round(diff.seconds/60,0))
+        return str(minutes)+ ' minutes ago'
 
 def base36encode(number):
     if not isinstance(number, (int, long)):
@@ -57,6 +70,7 @@ class User(db.Model):
     gender = Column(String(1))# @UndefinedVariable
     profile_pic_id = Column(String(60))# @UndefinedVariable
     about = Column(Text)# @UndefinedVariable
+    phone_number = Column(String(15), unique=True)
     follows = db.relationship('User', # @UndefinedVariable
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
@@ -109,7 +123,7 @@ class User(db.Model):
         return Notification.query.filter_by(user_id=self.id,seen=False).count()
         
     def get_notifications(self):
-        return Notification.query.filter_by(user_id=self.id).limit(8).all()
+        return Notification.query.filter_by(user_id=self.id,seen=False).limit(8).all()
     
     def is_viewable_by(self,user_id):
         if self.is_private == False or self.id == user_id:
@@ -120,7 +134,7 @@ class User(db.Model):
             return False
     
     def get_profile_url(self):
-        return config.ROOT_URL + '/user/' + self.username
+        return config.ROOT_URL + '/' + self.username
     
     def get_profile_pic_filename(self, file_ext=config.DEFAULT_IMG_EXT):
         if self.profile_pic_id is None:
@@ -191,7 +205,7 @@ class User(db.Model):
         self.is_private = False
         
     def set_picture_id(self):
-        pic_id = md5.new(self.email).digest()
+        pic_id = hashlib.md5(self.email).digest()
         self.profile_pic_id=pic_id
         return pic_id
         
@@ -265,14 +279,16 @@ class Project(db.Model):
     slug = Column(String(30))# @UndefinedVariable
     comments=Column(Text)# @UndefinedVariable
     pic_id = Column(String(100))# @UndefinedVariable
+    category = Column(String(15))
     posts = db.relationship('Post',  lazy = 'dynamic', backref='project')# @UndefinedVariable
     members = db.relationship('ProjectMember')# @UndefinedVariable
     
-    def __init__(self, project_name, goal, created_by_id, privacy):
+    def __init__(self, project_name,category, goal, created_by_id, privacy):
         self.project_name=project_name
         self.goal=goal
         self.created_by_id = created_by_id
         self.privacy_mode=privacy
+        self.category = category
 
     def has_pic(self):
         if self.pic_id is None or self.pic_id == "":
@@ -281,8 +297,20 @@ class Project(db.Model):
             return True
     
     def is_viewable_by(self, user_id):
-        return True
-    
+        if self.privacy_mode ==0:
+            return True
+        elif self.privacy_mode==1:
+            user = User.query.get(self.created_by_id)
+            is_friend = user.friends.get(user_id)
+            if is_friend:
+                return False
+            else:
+                return True
+        elif self.created_by_id==user_id:
+                return True
+        else:
+            return False
+            
     def get_slug(self):
         _slugify_strip_re = re.compile(r'[^\w\s-]')
         _slugify_hyphenate_re = re.compile(r'[-\s]+')
@@ -337,16 +365,18 @@ class Notification(db.Model):
     id = Column(Integer, primary_key=True)# @UndefinedVariable
     created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
     user_id =  Column(Integer, db.ForeignKey('user.id'), index=True)# @UndefinedVariable
+    post_id = Column(Integer, index=True)# @UndefinedVariable
     message = Column(String(150))# @UndefinedVariable
     url = Column(String(100))# @UndefinedVariable
-    dom_element_id = Column(String(30))
+    dom_element_id = Column(String(50))
     seen = Column(Boolean, default=False)# @UndefinedVariable
         
-    def __init__(self, user_id, message, url, dom_element_id=''):
+    def __init__(self, user_id, message, url,  post_id=None,dom_element_id=''):
         self.message=message
         self.user_id=user_id
         self.url=url
         self.dom_element_id = dom_element_id
+        self.post_id = post_id
         
     def get_url(self):
         full_url = self.url+"?nid="+str(self.id)
@@ -384,6 +414,7 @@ class Post(db.Model):
     id = Column(Integer, primary_key=True)# @UndefinedVariable
     created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
     created_by_id =  Column(Integer, db.ForeignKey('user.id'))# @UndefinedVariable
+    type_id = Column(Integer, default=0)
     project_id = Column(Integer, db.ForeignKey('project.id'), index=True)# @UndefinedVariable
     post_text = Column(Text)# @UndefinedVariable
     pic_id = Column(String(80))# @UndefinedVariable
@@ -397,17 +428,8 @@ class Post(db.Model):
         return get_s3_url(path)
     
     def get_created_date_str(self):
-        diff = datetime.now()-self.created_date
-        if diff.days > 10:
-            return self.created_date.strftime("%B %d, %Y")
-        if diff.days > 1:
-            return str(int(diff.days)) +' days ago'
-        elif diff.seconds > 3600:
-            hours = int(round(diff.seconds/3600,0))
-            return str(hours)+ ' hours ago'
-        else:
-            minutes = int(round(diff.seconds/60,0))
-            return str(minutes)+ ' minutes ago'
+        return date_to_str(self.created_date)
+            
             
     
 class PostComment( db.Model):
@@ -422,6 +444,10 @@ class PostComment( db.Model):
         self.user_id=user_id
         self.post_id=post_id
         self.comment_text=comment_text
+        
+    def get_created_date_str(self):
+        return date_to_str(self.created_date)
+    
     
 class PostLike(NotificationMixin,  db.Model):
     __tablename__ = 'post_like'

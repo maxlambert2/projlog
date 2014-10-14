@@ -11,7 +11,7 @@ tar -xvzf jpegsrc.v8c.tar.gz
 cd jpeg-8c
 ./configure
 make
-sudo make install
+make install
 cd ../
 Install freetype (more PIL requirements)
 
@@ -20,7 +20,7 @@ tar -xvzf freetype-2.4.5.tar.gz
 cd freetype-2.4.5
 ./configure
 make
-sudo make install
+make install
 cd ../
 Install PIL (usually in the requirements.txt so I don't have it in the above linked instruction)
 

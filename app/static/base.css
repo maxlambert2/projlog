@@ -37,14 +37,14 @@ a{
 cursor: pointer;  
 text-decoration:none;  
 border-style:none;
-color: #328ED9;
+color: #436CBF;
 text-decoration: none;
 font-weight: bold;
 } 
 
 body { 
 	background:#fff none repeat scroll 0%; 
-	font: 13px  "Lucida Grande", helvetica, verdana,arial,sans-serif;
+	font: 12px  helvetica, verdana,arial,sans-serif;
 	font-style:normal;
 	color:black;
 	margin:0px;
@@ -70,8 +70,9 @@ div#header{
 	text-align: left;
 	overflow: auto;
 	position: relative;
-	display: inline-table;
+	display: inline-table;*/
 	width: 1100px;
+	clear: both;
 }
 
 .clearfloats{
@@ -86,7 +87,7 @@ div#header{
 	padding-bottom: 20px;
 	color:#858585;
 	min-height:90px;
-	width: 900px;
+	width: 1100px;
 	display: block;
 	margin:0;
 }
@@ -163,8 +164,9 @@ float: left;
 
 
 #rightcolumn.project {
-	width: 700px;
+	width: 600px;
 	background-color: #F6F6F6;
+	min-height: 500px;
 }
 
 #leftcolumn.two_col_layout {
@@ -204,9 +206,12 @@ table.projects {
 }
 
 table.projects tr {
-	background-color: #F6F6F6;
-	border-bottom: 2px solid white;
-		height: 120px; 
+
+		height: 100px; 
+}
+
+.gray-back {
+		background-color: #F0F3FA;
 }
 
 table.projects tr td {
@@ -214,7 +219,7 @@ table.projects tr td {
 	border-left: 2px solid white;
 }
 
-table.projects tr td:not(.project_name){
+table.projects tr td.goal{
 	padding:0 15px;
 }
 
@@ -226,27 +231,27 @@ table.projects td.project_name {
 	padding: 0;
 }
 
-.project_name h1 ,.project_name h2  {
+.project_name h1  {
 	position: absolute;
-	font-weight: bold;
 	z-index: 5;
-	width: 100%;
 	text-align: center;
+}
+
+.project_name h2 {
 	top:40px;
+	padding: 10px;
+	width: 100%;
 }
 
 
-#back_pic_container h1 {
-	top:80px;
-}
 
 h2 {
-	font-size: 1.2em;
+	font-size: 1.1em;
 	float:left;
 }
 
 h1 {
-	font-size: 3em;
+	font-size: 2.5em;
 }
 
 
@@ -265,7 +270,7 @@ div#nopagefound {
 div#projlog_purpose {
 	padding: 60px;
 	font-size: 16px;
-	background-image:url(/static/beach3.JPG);
+	background-image:url(/static/beach3.jpg);
 	background-repeat: no-repeat;
 	height: 600px;
 
@@ -426,8 +431,8 @@ form.full_page {
 	padding: 0;
 }
 
-form.full_page ul {
-	width: 500px;
+form.full_page {
+	min-width: 600px;
 }
 
 form.full_page ul li input {
@@ -460,22 +465,22 @@ form.post_status textarea{
 }
 
 form.post_status.full_page textarea{
-	width: 40em;
+	width: 35em;
 	height: 5em;
 	display: block;
 	clear: both;
-	margin: 1em;
 }
 
-form.post_status div.inputWrapper {
-	clear:both;
-	font-weight: bold;
-color: #328ED9;;
+table.friends_list {
+	padding: 20px;
 }
 
+table.friends_list tr td {
+	padding: 10px;
+}
 
 form.post_status input[type="submit"]{
-margin-left: 220px;
+margin-left: 100px;
 float: left;
 margin-top: 5px;
 }
@@ -483,6 +488,8 @@ margin-top: 5px;
 .profile_summary{
 	font-style: bold;
 	padding: 10px;
+	white-space: pre-wrap;
+word-wrap: break-word;
 }
 
 div.post {
@@ -498,14 +505,14 @@ div.post {
 
 .post_container {
 	margin-bottom: 20px;
-	width: 100%;
+	width: 550px;
 }
 
 
 .comment_box {
-	margin-left: 1em;
 	background-color: white;
 	display: inline-block;
+	width: 100%;
 }
 
 div.comment {
@@ -541,29 +548,40 @@ div.comment {
 	font-size: 30px;
 	width: 600px;
 	text-align: center;
-	top: 150px; 
-	left: 250px;
+	top: 220px; 
+	left: 50px;
 	z-index: 5;
 	color: white;
 }
 
-#proj_back_pic {
-	position: absolute;
-	left: 150px;
-	width: 800px;
-	height: 225px;
-	margin:10px;
+img#proj_back_pic {
 	z-index: 2;
-	color: white;
-	background-color:#CCE0FF;
+	width:700px;
+	background-color:#66A3FF;
+	height: 200px;
 }
 
+div#proj_back_pic {
+	width:700px;
+	height: 200px;
+}
+
+div#proj_back_pic h1 {
+	color:#66A3FF;
+}
+
+#back_pic_container h1 {
+	top:90px;
+	width:700px;
+	text-align: center;
+}
 
 #back_pic_container{
-	width: 100%;
-	height: 250px;
-	overflow: auto;
+	width:1000px;
+	height: 200px;
+	margin:10px;
 	z-index: -1;
+	padding-left: 200px;
 }
 
 
@@ -576,8 +594,12 @@ div.comment {
 }
 
 #proj_content{
-	width: 100%;
+	position: absolute;
+	width: 1100px;
 	display: block;
+	top: 220px;
+	clear: both;
+	overflow: auto;
 }
 
 
@@ -650,11 +672,13 @@ img.tiny {
 .date {
 	font-size: 0.8em;
 	color: #B8B8B8;
+	margin: 0 4px 4px 4px;
 }
+
 
 .comment_text {
 	width: 350px;
-	margin: 5px;
+	padding: 4px 3px 1px 3px;
 }
 
 .post img.thumbnail {
@@ -802,18 +826,26 @@ input[type="file"] {
 .bold {
 	font-weight: bold;
 }
+
 .post_header {
-	display: block;
-	height: 30px;
+	display: inline-block;
+	height: 40px;
+}
+
+.post_header_text {
+	width: 300px;
+	padding: 3px 3px 1px 3px;
+	display: inline-block;
+	float;left;
+	clear:none;
+	vertical-align: middle;
 }
 
 .comment_link {
 	font-size: 0.8em;
 }
 .post_content {
-	margin-top: 10px;
-	min-height: 1.5em;
-	padding: 1em 0.3em;
+	padding: 0.8em 0.3em;
 }
 
 img.post {
@@ -843,15 +875,14 @@ margin: 0;
 border: none;
 margin:10px;
 background-color: #F3F8FB;
+white-space: pre-wrap;
+word-wrap: break-word;
 }
 
 #profile_pic {
 	margin-bottom: 10px;
 }
 
-#profile_details{
-	text-align: left;
-}
 
 .filename {
 	float: left;
@@ -880,15 +911,14 @@ a.button:hover{
 }
 
 
-div.clearfloats {clear:both;}
 
-
-#profile_details {
+#profile_details{
+	text-align: left;
 	padding: 10px;
 }
 
 #profile_details li {
-line-height: 18px;
+padding-top: 0.5em;
 width: 100%;
 text-align: left;
 vertical-align: middle;
@@ -905,8 +935,8 @@ font-size: 1.1em;
 
 .page_title {
 	width: 100%;
-	font-size: 15px;
 	padding-bottom: 10px;
+	font-size: 1.5em;
 }
 
 .notif_flag{
@@ -1025,10 +1055,10 @@ div#toolbar {
 }
 
 form.full_page .submit_cancel_buttons {
-	width:200px;
-	padding:20px;
+	width:150px;
+	margin-top:20px;
 	margin-left:400px;
-	height: 35px;
+	height: 25px;
 }
 
 .submit_cancel_buttons input {
@@ -1089,11 +1119,22 @@ div.choices {
 
 .thumbnail {
 height: 35px;
-margin: 7px;
 }
 
-.comment_box .thumbnail{
-	margin: 5px 0px 5px 10px;
+.small_pic {
+	height: 100px;
+	width: 100px;
+}
+
+.small_pic_caption {
+	width: 100px;
+	display: inline-block;
+	clear:both;
+	padding: 0.4em;
+}
+
+.post_container .thumbnail {
+	margin: 0.7em 0.7em 0 0;
 }
 
 .thumbnail .user_name {
@@ -1148,6 +1189,20 @@ a.prev_page_link{
 	display:inline;
 	margin:0px 2px;
 }
+
+.clearfix {
+	display: inline-table;
+}
+
+/* backsalsh hack hides from ie mac \*/
+* html  .clearfix{
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}
+/* end backslash hack */
 
 .clearfix:after {
 clear: both;

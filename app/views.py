@@ -7,7 +7,7 @@ from flask import render_template, flash, redirect , Flask, url_for, request, g,
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from models import  FriendRequest, friendships, Notification, Post, PostComment
+from models import FriendRequest, friendships, Notification, Post, PostComment, User
 import config
 from file_lib import *
 import time, base64, urllib, json, hmac
@@ -35,7 +35,6 @@ def notification_viewed(f):
 @app.route('/sign_s3_upload/')
 def sign_s3():
     
-    folder = config.S3_BUCKET_FOLDER
 
     object_name = request.args.get('s3_object_name')
     mime_type = request.args.get('s3_object_type')
@@ -165,8 +164,7 @@ def edit_profile(status=None):
                            profile_pic_url=profile_pic_url, 
                            file_name=temp_file_name)
 
-@app.route('/user/<username>')
-@login_required
+@app.route('/<username>')
 def user_page(username):
     user = User.query.filter_by(username=username).first()# @UndefinedVariable
     if user is not None:
@@ -187,13 +185,16 @@ def my_friends():
     return render_template('my_friends.html',friends=friends)
     
     
-@app.route('/request_friend', methods=['POST'])
+@app.route('/request_friend', methods=['POST','GET'])
 def request_friend():  
     form = FriendRequestForm()
     if form.validate_on_submit():
+#         if 'requester_id' in request.args:
+#             requester_id = request.args['requester_id']
+#             requested_id = request.args['requested_id']
         if request.method =='POST':
-            requester_id =request.form['requester_id']
-            requested_id =request.form['requested_id']
+            requester_id =int(request.form['requester_id'])
+            requested_id =int(request.form['requested_id'])
         count = FriendRequest.query.filter_by(requester_id=requester_id, requested_id=requested_id).count()# @UndefinedVariable
         #count_reverse = FriendRequest.query.filter_by(requester_id=requested_id, requested_id=requester_id).count()# @UndefinedVariable
         if count == 0:
@@ -202,9 +203,8 @@ def request_friend():
                 db.session.add(friend_request)# @UndefinedVariable
                 db.session.commit()# @UndefinedVariable
             except:
-                return "Error"
-#     else:
-#         return  render_template('add_friend_form.html',form=form)
+                return "Error creating Friend Request"
+    #return render_template('add_friend_form.html', form=form)
     return "Success"
 
 @app.route('/approve_friend', methods=['GET', 'POST'])
@@ -245,11 +245,11 @@ def approve_friend():
 @notification_viewed 
 def friend_requests():
     requests = FriendRequest.query.filter_by(requested_id=current_user.id, approved=False,ignored=False).limit(10)# @UndefinedVariable
+    if requests.count() > 0:
+        return render_template('friend_requests.html',friend_requests=requests)
+    else:
+        return redirect(url_for('index'))  
     
-    return render_template('friend_requests.html',friend_requests=requests)
-    
-
-
 
 @app.route('/user/<username>/profile_pic/')
 @login_required
@@ -258,14 +258,14 @@ def user_profile_pic_page(username):
     if user is not None:
         return render_template('user_profile_pic.html', user=user)
     else:
-        redirect(url_for('index'))
+        return redirect(url_for('index'))
         
         
         
 @app.route('/post', methods=['GET', 'POST'])      
 @login_required
 def post():
-    form = PostForm()
+    form = PostProjectForm()
     user_id = current_user.id
     form.project_id.choices = [(p.id,p.project_name) for p in Project.query.filter_by(created_by_id=current_user.id).order_by(Project.created_date.desc()).limit(config.PROJ_LIST_LIMIT)]  # @UndefinedVariable
     if request.method =='POST' and form.validate_on_submit():
@@ -321,23 +321,29 @@ def post_comment():
     user = User.query.get(user_id)# @UndefinedVariable
     post = Post.query.get(post_id)# @UndefinedVariable
     if user and post:
-        project = Project.query.get(post.project_id)
-        url = project.get_url() 
         comment = PostComment(user_id=user_id,post_id=post_id, 
-                    comment_text=comment_text)
+        comment_text=comment_text)
         db.session.add(comment)# @UndefinedVariable
-        db.session.flush() # @UndefinedVariable
-        notif_msg = user.get_full_name() +" commented on your post"
-        dom_element_id = 'comment'+str(comment.id)
-        notif = Notification(message=notif_msg, user_id=user_id, url=url, dom_element_id=dom_element_id)
-        db.session.add(notif)# @UndefinedVariable
-        db.session.commit()# @UndefinedVariable
+        db.session.flush() # Flush db session to generate comment id @UndefinedVariable
+        if user_id != post.created_by_id:
+            user_notified = post.created_by_id
+            current_notif = Notification.query.filter_by(post_id=post_id, user_id = user_notified, seen = False).count()# @UndefinedVariable
+            #check if unseen notificaiton already exists for this user and post
+            if current_notif == 0: 
+                project = Project.query.get(post.project_id)
+                url = project.get_url() 
+                notif_msg = user.get_full_name() +" commented on your post"
+                dom_element_id = 'comment'+str(comment.id)
+                notif = Notification(message=notif_msg, user_id=user_notified, url=url,post_id=post_id, dom_element_id=dom_element_id)
+                db.session.add(notif)# @UndefinedVariable
+            db.session.commit()# @UndefinedVariable
         return '{"success":true,"comment_id":"'+str(comment.id)+'"}'
     else:
         return "{'success':false, 'error_msg':'Invalid user or post', 'post_id':"+str(post_id)+", 'user_id':"+str(user_id)+"}"
 
 @app.route('/project/<project_id>/<slug>/', methods=['GET', 'POST'])
 @login_required
+@notification_viewed 
 def project_page(project_id, slug):
     project = Project.query.get(project_id) # @UndefinedVariable
     posts = Post.query.filter_by(project_id=project_id).order_by(Post.created_date.desc()).limit(10)# @UndefinedVariable
@@ -361,6 +367,7 @@ def edit_project(project_id, slug):
         project.goal = form.goal.data
         project.privacy_mode = form.privacy.data
         project.comments = form.comments.data
+        project.category = form.category.data
         file = request.files['picture']
         if file: ## and allowed_filename_pic(file.filename):   
             if not project.has_pic():
@@ -387,11 +394,24 @@ def create_project():
     form.created_by=current_user
     previous_page = config.ROOT_URL
     if request.method == 'POST' and form.validate_on_submit():
+        project_name = form.project_name.data
         project = Project(project_name=form.project_name.data, 
                           goal=form.goal.data, 
                           privacy=form.privacy.data,
-                          created_by_id=current_user.id)
+                          created_by_id=current_user.id,
+                          category  = form.category.data)
+        
         db.session.add(project)  # @UndefinedVariable
+        db.session.flush() # @UndefinedVariable
+        ##create new post for this new project
+        post = Post(created_by_id=current_user.id,
+                        project_id=project.id,
+                        post_text="",
+                        type_id=config.POST_TYPE['create_project']
+                        )
+        
+        
+        db.session.add(post)  # @UndefinedVariable
         db.session.commit()  # @UndefinedVariable
         return redirect(project.get_path())
     return render_template('create_project.html', form=form, previous_page=previous_page)
