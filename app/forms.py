@@ -3,12 +3,13 @@ from wtforms.validators import Required, Length, regexp
 from models import User, Project
 from flask_wtf import Form
 import config
+from app import db
 
 
 
 class LoginForm(Form):
-    username = TextField('Email/Username', [Required()])
-    password = PasswordField('Password', [Required()])
+    username = TextField('Email/Username', validators = [Required()])
+    password = PasswordField('Password', validators = [Required()])
     remember_me = BooleanField('Remember Me', default = False)
     
     def __init__(self, *args, **kwargs):
@@ -23,19 +24,33 @@ class LoginForm(Form):
             user = User.query.filter_by(email=self.username.data).first()  # @UndefinedVariable
         else:
             user = User.query.filter_by(username=self.username.data).first()# @UndefinedVariable
+        
         if user is None:
             self.username.errors.append('Invalid Email or Password')
             return False
-        self.user = user
-        return True
+        elif user.is_locked():
+            self.username.errors.append('Account is locked. Please try again in 2 minutes.')
+            return False
+        elif not user.check_password(self.password.data):
+            self.username.errors.append('Invalid Email or Password')
+            user.pass_tries_increment()
+            db.session.add(user)# @UndefinedVariable
+            db.session.commit()# @UndefinedVariable
+            return False
+        else:
+            self.user = user
+            return True
         
     
     
 class SignupForm(Form):
-    username = TextField('Username', [Length(min=2, max=30)])
-    first_name = TextField('First Name', [Length(min=2, max=40)])
-    email = TextField('Email', [Length(min=6, max=40)])
-    password = PasswordField('Password', [
+    username = TextField('Username', validators = [Length(min=2, max=30),
+        Required()])
+    first_name = TextField('First Name', validators = [Length(min=2, max=40),
+        Required()])
+    email = TextField('Email', validators = [Length(min=6, max=40),
+        Required()])
+    password = PasswordField('Password', validators = [Length(min=6, max=20),
         Required()
     ])
     
@@ -85,24 +100,16 @@ class ProjectForm(Form):
                 return False
         return True
                 
-    
+
 class PostForm(Form):
-    post_text = TextAreaField('',validators = [Required()])
-    ##project_id = SelectField(u'Project', coerce=int)
-#     ##picture = FileField(u'Picture', [regexp(config.ALLOWED_PIC_FILE_EXT)])
-#     
-#     def __init__(self, formdata=None, obj=None, prefix='', user_id=None, **kwargs):
-#         if user_id:
-#             projects = Project.query.filter_by(created_by_id = user_id).limit(config.PROJ_LIST_LIMIT) # @UndefinedVariable
-#             self.project.choices = projects
-#         Form.__init__(self, formdata, obj, prefix, **kwargs)
-
-class PostProjectForm(PostForm):
-    project_id = SelectField(u'Project', coerce=int)
-
-class PostFormAjax(PostForm):
     user_id = IntegerField('user_id', validators = [Required()])  
-    project_id = IntegerField('project_id', validators = [Required()]) 
+    project_id = SelectField(u'Project', coerce=int)
+    post_text = TextAreaField('',validators = [Required()])
+    
+class CommentForm(Form):
+    user_id = IntegerField('user_id', validators = [Required()])  
+    post_id = IntegerField('post_id', validators = [Required()])  
+    comment_text = TextField('comment_text',validators = [Required()])
     
 class FriendRequestForm(Form):
     requester_id = IntegerField('requester_id')

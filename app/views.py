@@ -14,8 +14,9 @@ import time, base64, urllib, json, hmac
 from hashlib import sha1
 from werkzeug.utils import secure_filename
 from PIL import Image
-from flask_wtf.csrf import CsrfProtect
-csrf = CsrfProtect()
+from urlparse import urlparse, urljoin
+from app import csrf
+
 
 
 def notification_viewed(f):
@@ -58,7 +59,6 @@ def sign_s3():
 def csrf_error(reason):
     return render_template('csrf_error.html', reason=reason), 400
 
-
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -72,13 +72,43 @@ def before_request():
     g.user=None
     if current_user.is_authenticated():
         g.user = current_user
+        
+        
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+
+def get_redirect_target():
+    for target in request.args.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+
+
+class RedirectForm(Form):
+    next = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        if not self.next.data:
+            self.next.data = get_redirect_target() or ''
+
+    def redirect(self, endpoint='index', **values):
+        if is_safe_url(self.next.data):
+            return redirect(self.next.data)
+        target = get_redirect_target()
+        return redirect(target or url_for(endpoint, **values))
     
 @app.route('/')
 def index():
     if current_user is None or not current_user.is_active():
         return landing_page()
     posts = current_user.posts_followed()
-    user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PROJ_LIST_LIMIT)  # @UndefinedVariable
+    user_projects = Project.query.filter_by(created_by_id=current_user.id).limit(config.PAGE_POSTS_MAX)  # @UndefinedVariable
     return render_template('news_feed.html', posts=posts,  projects=user_projects)
 
 def landing_page():
@@ -265,7 +295,7 @@ def user_profile_pic_page(username):
 @app.route('/post', methods=['GET', 'POST'])      
 @login_required
 def post():
-    form = PostProjectForm()
+    form = PostForm()
     user_id = current_user.id
     form.project_id.choices = [(p.id,p.project_name) for p in Project.query.filter_by(created_by_id=current_user.id).order_by(Project.created_date.desc()).limit(config.PROJ_LIST_LIMIT)]  # @UndefinedVariable
     if request.method =='POST' and form.validate_on_submit():
@@ -293,7 +323,7 @@ def create_post(project_id, user_id, post_text, pic_file):
             
 @app.route('/ajax_post', methods=['GET', 'POST'])      
 def ajax_post():
-    form = PostFormAjax()
+    form = PostForm()
     if request.method =='POST' and form.validate_on_submit():
         project_id = form.project_id.data
         user_id = form.user_id.data
@@ -309,7 +339,8 @@ def ajax_post():
 
 @app.route('/post_comment', methods=['GET', 'POST'])  
 def post_comment():
-    if request.method =='POST':
+    form = CommentForm()
+    if request.method =='POST' and form.validate_on_submit():
         user_id = int(request.form['user_id'])
         post_id = int(request.form['post_id'])
         comment_text = request.form['comment_text']
@@ -325,6 +356,7 @@ def post_comment():
         comment_text=comment_text)
         db.session.add(comment)# @UndefinedVariable
         db.session.flush() # Flush db session to generate comment id @UndefinedVariable
+        #Add notification if comment made by user other than post creator
         if user_id != post.created_by_id:
             user_notified = post.created_by_id
             current_notif = Notification.query.filter_by(post_id=post_id, user_id = user_notified, seen = False).count()# @UndefinedVariable
@@ -336,7 +368,7 @@ def post_comment():
                 dom_element_id = 'comment'+str(comment.id)
                 notif = Notification(message=notif_msg, user_id=user_notified, url=url,post_id=post_id, dom_element_id=dom_element_id)
                 db.session.add(notif)# @UndefinedVariable
-            db.session.commit()# @UndefinedVariable
+        db.session.commit()# @UndefinedVariable
         return '{"success":true,"comment_id":"'+str(comment.id)+'"}'
     else:
         return "{'success':false, 'error_msg':'Invalid user or post', 'post_id':"+str(post_id)+", 'user_id':"+str(user_id)+"}"
@@ -347,7 +379,9 @@ def post_comment():
 def project_page(project_id, slug):
     project = Project.query.get(project_id) # @UndefinedVariable
     posts = Post.query.filter_by(project_id=project_id).order_by(Post.created_date.desc()).limit(10)# @UndefinedVariable
-    viewable=project.is_viewable_by(current_user.id)
+    viewable=project.is_viewable_by(current_user)
+    if not viewable:
+        return render_template('forbidden_access.html')
     form=PostForm()
     if request.method == 'POST' and form.validate_on_submit() :
         pic_file = request.files['picture']

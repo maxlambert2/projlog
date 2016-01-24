@@ -33,7 +33,7 @@ blockquote, q {
 quotes:"" "";  
 }  
 
-a{  
+a, .link {  
 cursor: pointer;  
 text-decoration:none;  
 border-style:none;
@@ -70,7 +70,7 @@ div#header{
 	text-align: left;
 	overflow: auto;
 	position: relative;
-	display: inline-table;*/
+	display: inline-table;
 	width: 1100px;
 	clear: both;
 }
@@ -87,7 +87,7 @@ div#header{
 	padding-bottom: 20px;
 	color:#858585;
 	min-height:90px;
-	width: 1100px;
+	/*min-width: 900px;*/
 	display: block;
 	margin:0;
 }
@@ -105,6 +105,53 @@ padding-left: 15px;
 float:left;
 padding: 0;
 }
+
+
+#bottom {
+	clear:both;
+	vertical-align:middle;
+	text-align:center;
+	width: 800px;
+	display: block;
+}
+
+/*@media (min-width: 960px) {
+
+	body {
+		font-size: 24px;
+	}
+
+	#main{
+		width: 960px;
+	}
+
+	.landing_page #leftcolumn {
+	width:480px;
+	float:left;
+	min-height:500px;
+	padding: 0;
+	}
+
+	#bottom {
+
+		width: 480px;
+	}
+
+	.landing_page #rightcolumn {
+	width:480px;
+	padding-left: 15px;
+	float:left;
+	padding: 0;
+	clear:both;
+	}
+
+	#footer{
+		width: 480px;
+	}
+
+}*/
+
+
 
 div#moto {
 padding-left: 20px;
@@ -130,14 +177,12 @@ display: block;
 	padding: 10px;
 }
 
-
-#bottom {
-	clear:both;
-	vertical-align:middle;
-	text-align:center;
-	width: 800px;
-	display: block;
+input#post_text {
+	width: 30em;
+	height:4em;
 }
+
+
 
 
 #centercolumn {
@@ -223,18 +268,21 @@ table.projects tr td.goal{
 	padding:0 15px;
 }
 
+.project_name{
+	text-align: center;
+	padding: 0;
+	line-height: 150%;
+}
 
 table.projects td.project_name {
-	text-align: center;
 	position: relative;
 	width: 200px;
-	padding: 0;
 }
 
 .project_name h1  {
 	position: absolute;
 	z-index: 5;
-	text-align: center;
+	height: 150px;
 }
 
 .project_name h2 {
@@ -267,9 +315,9 @@ div#nopagefound {
 	padding:100px;
 }
 
-div#projlog_purpose {
+#projlog_purpose {
 	padding: 60px;
-	font-size: 16px;
+	font-size: 1.3em;
 	background-image:url(/static/beach3.jpg);
 	background-repeat: no-repeat;
 	height: 600px;
@@ -324,14 +372,12 @@ input,textarea, select  {
 	font-size:1em;
 	border: none;
 	outline: none;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	-khtml-border-radius: 4px;
+	border-radius: 0.4em;
 	clear:none;
 	border-style:solid;
 	border-width:1px;
-	border-color:#0066CC;
+	border-color-bottom:#0066CC;
+	border-color-left:#0066CC;
 	float:left;
 	text-align: left;
 }
@@ -369,9 +415,6 @@ label.remember {
 	margin:0.5em 0.8em;
 	clear:none;
 	display: inline-block; 
-	-moz-border-radius: 0.3em;
-	-webkit-border-radius: 0.3em;
-	-khtml-border-radius: 0.3em;
 	border-bottom-style:1px solid black;
 	border-left-style: none;
 	border-top: 1px solid #99ADEB;
@@ -450,12 +493,15 @@ form.full_page textarea {
 
 legend{
 	color:#000;
-	font-size:1.2em;
-	padding: 1.8em;
+	font-size:1.3em;
+	padding-top: 1.5em;
+	padding-bottom: 0.5em;
 }
 
 form.post_status {
-	padding: 20px;
+	padding-top: 10px;
+	padding-bottom: 20px;
+	padding-left: 0;
 }
 
 form.post_status textarea{
@@ -480,9 +526,9 @@ table.friends_list tr td {
 }
 
 form.post_status input[type="submit"]{
-margin-left: 100px;
+margin-left: 30px;
 float: left;
-margin-top: 5px;
+margin-top: 6px;
 }
 
 .profile_summary{
@@ -513,6 +559,7 @@ div.post {
 	background-color: white;
 	display: inline-block;
 	width: 100%;
+	padding-left: 20px;
 }
 
 div.comment {
@@ -548,7 +595,7 @@ div.comment {
 	font-size: 30px;
 	width: 600px;
 	text-align: center;
-	top: 220px; 
+	top: 200px; 
 	left: 50px;
 	z-index: 5;
 	color: white;
@@ -556,32 +603,38 @@ div.comment {
 
 img#proj_back_pic {
 	z-index: 2;
-	width:700px;
 	background-color:#66A3FF;
-	height: 200px;
 }
 
-div#proj_back_pic {
+#proj_back_pic {
 	width:700px;
-	height: 200px;
+	height: 180px;
 }
 
 div#proj_back_pic h1 {
 	color:#66A3FF;
 }
 
-#back_pic_container h1 {
-	top:90px;
-	width:700px;
-	text-align: center;
+img#proj_back_pic h1{
+	color: white;
 }
 
-#back_pic_container{
+#project_header {
 	width:1000px;
-	height: 200px;
-	margin:10px;
+	height: 180px;
 	z-index: -1;
 	padding-left: 200px;
+}
+
+#project_header h1 {
+	z-index: 3;
+	height: 180px;
+	position: absolute;
+	left: 200px;
+	top:80px;
+	line-height: 150%;
+	width: 700px;
+	text-align: center;
 }
 
 
@@ -597,7 +650,7 @@ div#proj_back_pic h1 {
 	position: absolute;
 	width: 1100px;
 	display: block;
-	top: 220px;
+	top: 180px;
 	clear: both;
 	overflow: auto;
 }
@@ -615,12 +668,6 @@ div#proj_back_pic h1 {
 #edit_picture {
 	padding-left: 30px;
 	float: left;
-}
-
-form.post_status #edit_picture {
-	clear:both;
-	float: left;
-
 }
 
 form ul {
@@ -661,7 +708,7 @@ img.tiny {
 .user_thumbnail {
 	float:left;
 	display: inline-block;
-	height: 35px;
+	height: 50px;
 	margin: 5px;
 }
 
@@ -672,7 +719,8 @@ img.tiny {
 .date {
 	font-size: 0.8em;
 	color: #B8B8B8;
-	margin: 0 4px 4px 4px;
+	margin: 0.4em 0;
+	float: left;
 }
 
 
@@ -681,13 +729,12 @@ img.tiny {
 	padding: 4px 3px 1px 3px;
 }
 
-.post img.thumbnail {
+.post .profile_pic {
 	float: left;
 }
 
 span.label {
 	float: left;
-	margin-top: 
 }
 
 form ul.errors {
@@ -829,23 +876,32 @@ input[type="file"] {
 
 .post_header {
 	display: inline-block;
-	height: 40px;
+}
+
+.post_header .date{
+	clear: both;
+	float: left;
+}
+
+.comment_box .date {
+	padding:0 0 0 4px;
+	font-size: 0.75em;
 }
 
 .post_header_text {
 	width: 300px;
-	padding: 3px 3px 1px 3px;
+	padding: 0 0 0 0.7em;
 	display: inline-block;
-	float;left;
+	float:left;
 	clear:none;
-	vertical-align: middle;
+	vertical-align: text-top;
 }
 
 .comment_link {
 	font-size: 0.8em;
 }
 .post_content {
-	padding: 0.8em 0.3em;
+	padding: 1.2em 0.3em;
 }
 
 img.post {
@@ -983,7 +1039,7 @@ font-weight: normal;
 }
 
 fieldset{
-	width: 800px;
+	/**width: 800px;*/
 }
 
 #nav ul.dropdown li {
@@ -1118,11 +1174,22 @@ div.choices {
 }
 
 .thumbnail {
-height: 35px;
+height: 40px;
+margin:3px 3px 0 0;
+}
+
+.tinypic{
+	height: 50px;
+
 }
 
 .small_pic {
 	height: 100px;
+	width: 100px;
+}
+
+.tiny_wide_pic {
+	height: 70px;
 	width: 100px;
 }
 
@@ -1131,10 +1198,6 @@ height: 35px;
 	display: inline-block;
 	clear:both;
 	padding: 0.4em;
-}
-
-.post_container .thumbnail {
-	margin: 0.7em 0.7em 0 0;
 }
 
 .thumbnail .user_name {

@@ -1,8 +1,12 @@
 run.py
 flask/*
-config/local.py
-config/__init__.py
+config/
 virtualenv.py
 .*
 .medadata/*
 venv/*
+password*
+*.html
+virtualenv*
+*csr
+

@@ -4,20 +4,28 @@
 <div class="post_container">
 	<div class="post">
 		<div class="post_header clearfix">
-			<a href="{{post.created_by.get_profile_url()}}"><img class="thumbnail" src="{{post.created_by.get_thumbnail_url()}}" /></a>
+			<a href="{{post.created_by.get_profile_url()}}"><img class="tinypic profile_pic" src="{{post.created_by.get_thumbnail_url()}}" /></a>
 			<div class="post_header_text">
-				<a href="{{post.created_by.get_profile_url()}}"> {{post.created_by.get_full_name()}}</a>
-						{% if post.type_id == 2 %}
-					created new project
-					{% else %}
-					updated project
-					{% endif %}
-					<a href="{{post.project.get_url()}}"> {{post.project.project_name}}</a>
+				<div>
+				<a href="{{post.created_by.get_profile_url()}}"> {{post.created_by.get_first_name()}}</a>
 				
+					{% if post.type_id == 2 %}
+						created project 
+					{% endif %}
+					{% if show_project_name %}
+						{% if post.type_id == 0 %}
+							posted on project 
+						{% endif %}
+							
+						<a href="{{post.project.get_url()}}"> {{post.project.project_name}}</a>
+					
+					{% endif %}
 				</div>
-			<div class="date">
+				<div class="date">
 				{{post.get_created_date_str()}}
 			</div>
+				</div>
+			
 		</div>
 		<div class="post_content">
 			{{post.post_text}}
@@ -40,7 +48,7 @@
 			</td>
 			<td>
 				<div class='comment_text' id="comment{{comment.id}}">	
-			<a href="{{comment.user.get_profile_url()}}" class="thumbnail_label">{{comment.user.get_full_name()}}</a>
+			<a href="{{comment.user.get_profile_url()}}" class="thumbnail_label">{{comment.user.get_first_name()}}</a>
 						{{comment.comment_text}}
 				</div>
 								<div class="date">
@@ -49,14 +57,14 @@
 			</td>
 		</tr>
 		{% endfor %}
-		{% if current_user != '' %}
+		{% if current_user !='' %}
 		<tr id="new_comment_tr{{post.id}}">
 			<td>
 				<a href="{{current_user.get_profile_url()}}"><img class='thumbnail' src="{{current_user.get_thumbnail_url()}}" /></a>
 			</td>
 			<td>
 					<div id ="new_comment{{post.id}}" class="comment_text" >
-				<a id="new_comment_username{{post.id}}" style="display:none;" href="{{current_user.get_profile_url()}}" class="thumbnail_label">{{current_user.get_full_name()}}</a>
+				<a id="new_comment_username{{post.id}}" style="display:none;" href="{{current_user.get_profile_url()}}" class="thumbnail_label">{{current_user.get_first_name()}}</a>
 					<textarea id='new_comment_text{{post.id}}' placeholder="write comment..." ></textarea>
 					<a class="button" id="new_comment_button{{post.id}}" onclick="postComment({{post.id}})">Post</a>
 				</div>

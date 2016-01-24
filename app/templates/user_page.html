@@ -40,15 +40,17 @@
 {% for project in projects %}
 <tr>
 
-<td class="project_name gray-back">
-	<a href="{{project.get_url()}}"><h2>{{project.project_name}}</h2></a>
-</a>
-</td>
-	<td class='small_pic gray-back'>
+
+	<td class='small_pic'>
 	{% if project.has_pic() %}
 	 <a href="{{project.get_url()}}"><img  src="{{project.get_pic_url(size='small')}}" /></a>
 	{% endif %}
 	</td>
+
+	<td class="project_name gray-back">
+	<a href="{{project.get_url()}}">{{project.project_name}}</a>
+</a>
+</td>
 
 <td class="goal gray-back">
 	<b>Goal:</b> {{project.goal}}

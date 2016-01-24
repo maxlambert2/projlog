@@ -8,12 +8,12 @@
 
 <div id="main" class='clearfix'>
 
-<div id="back_pic_container" class="project_name">
+<div id="project_header">
 		{% if project.get_pic_url() %}
 			<img id="proj_back_pic" src="{{ project.get_pic_url(size='large') }}" />
-			<h1 class="with_pic">{{project.project_name}} </h1>
+			<h1 class="with_pic">Project {{project.project_name}} </h1>
 		{% else %}
-			<div id="proj_back_pic"> <h1>{{project.project_name}} </h1></div>
+			<div id="proj_back_pic"> <h1>Project {{project.project_name}} </h1></div>
 	{% endif %}
 	
 </div>
@@ -43,16 +43,16 @@
 	</div>
 
 	<div id="rightcolumn" class="project">
-		{% if current_user and project.created_by_id == current_user.id %}
+		{% if current_user and  current_user.is_friends_with(project.created_by_id) %}
 			 <form class="post_status" action="" method="post" enctype=multipart/form-data  name="post_status" >
 	    <fieldset>
 	    	     {{form.hidden_tag()}} 
 	    <input type="hidden" name="project_id" id="project_id" value="{{project.id}}" />
-	 <textarea id="post_text" name="post_text" placeholder="write post..."></textarea>
-	  <div class="inputWrapper"> Add Picture
+	 <input id="post_text" name="post_text" type="text" placeholder="write post..."></input>
+	  <div class="inputWrapper link"> Add Picture
 	       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
 	     </div>
-	         <input type="submit" value="Submit" class="button"/>
+	         <input type="submit" value="Submit" class="button"  style="position: absolute; left: -9999px; width: 1px; height: 1px;"  />
 	   <img id="preview_img" src="" />
 
 	 </fieldset>

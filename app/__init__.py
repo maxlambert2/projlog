@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 app.config.from_envvar('PROJLOG_SETTINGS')
-CsrfProtect(app)
+csrf = CsrfProtect(app)
 db = SQLAlchemy(app)
  
 login_manager = LoginManager()

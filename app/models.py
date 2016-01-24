@@ -11,12 +11,13 @@ from random import randrange
 import boto
 from datetime import datetime, timedelta
 
+
 #import String
 #import random
 
 def date_to_str(date_in):
     diff = datetime.now()-date_in
-    if diff.days > 10:
+    if diff.days > 30:
         return date_in.strftime("%B %d, %Y")
     if diff.days > 1:
         return str(int(diff.days)) +' days ago'
@@ -58,7 +59,7 @@ friendships = db.Table('friendships',   # @UndefinedVariable
 class User(db.Model):
     __tablename__ = 'user'
     id = Column(Integer, db.Sequence('user_id_seq', start=20000), primary_key=True)# @UndefinedVariable
-    created_date = Column(DateTime, default=datetime.now)# @UndefinedVariable
+    created_date = Column(DateTime, default=datetime.now())# @UndefinedVariable
     username = Column(String(30), unique=True)# @UndefinedVariable
     email = Column(String(60), unique=True)# @UndefinedVariable
     active = Column(Boolean, default=True)# @UndefinedVariable
@@ -88,7 +89,9 @@ class User(db.Model):
     projects = db.relationship('Project', backref='created_by')# @UndefinedVariable
     posts = db.relationship('Post', backref='created_by')# @UndefinedVariable
     comments = db.relationship('PostComment', backref='user')# @UndefinedVariable
-    
+    password_tries = Column(Integer,default=0)
+    account_locked = Column(Boolean)
+    locked_date = Column(DateTime)
 
     def __init__(self, username, email,password):
         self.username = username
@@ -103,6 +106,21 @@ class User(db.Model):
     
     def is_private(self):
         return self.privacy == 1;
+    
+    def is_locked(self):
+        if self.account_locked:
+            diff=datetime.now()-self.locked_date
+            if diff.seconds > 120:
+                self.unlock()  
+        return self.account_locked
+    
+    def unlock(self):
+        self.account_locked = False
+        self.reset_pass_tries()
+        
+    def lock(self):
+        self.locked_date = datetime.now()
+        self.account_locked = True
     
     def get_privacy(self):
         if self.privacy is None:
@@ -132,6 +150,11 @@ class User(db.Model):
             return True
         else:
             return False
+        
+    def is_friends_with(self,user_id):
+        if self.id == user_id:
+            return True
+        return self.friends.filter( friendships.c.friend_id == user_id).count() > 0
     
     def get_profile_url(self):
         return config.ROOT_URL + '/' + self.username
@@ -158,6 +181,12 @@ class User(db.Model):
             return get_s3_url(config.DEFAULT_THUMBNAIL)
         else:
             return self.get_profile_pic_url(size='thumbnail')
+        
+    def get_smallpic_url(self):
+        if not self.profile_pic_id:
+            return get_s3_url(config.DEFAULT_THUMBNAIL)
+        else:
+            return self.get_profile_pic_url(size='small')
     
     def get_profile_pic_medium_url(self):
         if not self.profile_pic_id:
@@ -185,9 +214,25 @@ class User(db.Model):
             return self.username
         else:
             return self.first_name + ' ' + self.last_name
+        
+    def get_first_name(self):
+        if self.first_name:
+            return self.first_name
+        else:
+            return self.username
          
     def is_authenticated(self):
         return True
+    
+    def pass_tries_increment(self):
+        if self.password is None:
+            self.password=0
+        self.password_tries+=1
+        if self.password_tries > config.MAX_LOGIN_ATTEMPTS:
+            self.lock()
+        
+    def reset_pass_tries(self):
+        self.password_tries=0
         
     def check_password(self, password):
         return check_password_hash(self.pw_hash, password)
@@ -296,18 +341,18 @@ class Project(db.Model):
         else:
             return True
     
-    def is_viewable_by(self, user_id):
+    def is_viewable_by(self, user):
         if self.privacy_mode ==0:
             return True
         elif self.privacy_mode==1:
-            user = User.query.get(self.created_by_id)
-            is_friend = user.friends.get(user_id)
-            if is_friend:
-                return False
+            if self.created_by_id==user.id:
+                return True
+            elif user.is_friends_with(self.created_by_id):
+                return True
             else:
-                return True
-        elif self.created_by_id==user_id:
-                return True
+                return False
+        elif self.created_by_id==user.id:
+            return True
         else:
             return False
             

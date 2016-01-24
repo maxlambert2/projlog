@@ -2,11 +2,11 @@
   {% from "_form_macro.html" import render_field %}
 {% block content %}
 
-<div class="landing_page">
+<div id="main" class="landing_page">
   <div id="leftcolumn">
     <div id="projlog_purpose">
 
-    <p> Wasting too much time online and not spending enough time following your goals and aspirations? <span style="color:white;"> Start a project and projlog it. </span></p>
+    <p> Cut the fluff in your news feed. Join the social network for side projects only. <span style="color:white;"> Start a project and projlog it. </span></p>
 
     </div>
   </div>
@@ -15,7 +15,7 @@
 
 {% include 'signup_form.html' %}
 
-    <form action="/login" method="post" name="login" class="login">
+    <form action="https://www.projlog.com/login" method="post" name="login" class="login">
     {{login_form.hidden_tag()}}
     <fieldset>
       <legend > Log In </legend>
@@ -30,13 +30,13 @@
     
     </li>
 
-    </ul>
+   <li>
+    <label></label>
     <input type="submit" value="Log In" class="button frontpage" />
+  </li>
+     </ul>
       </fieldset>
     </form>
-
-
-
   </div>
 
 </div>
