@@ -8,10 +8,10 @@
 
 $local_ip    = "127.0.0.1";
 $local_port  = "5433";
-$remote_ip   = "173.255.206.173";
+$remote_ip   = ;   #add db ip address here
 $remote_port = "5432";
-$remote_user = "fochiller";
-$remote_host = "eden.projlog.com";
+$remote_user = *****; #add use rhere
+$remote_host = ********; #add host here
 
 $a = shift;
 $a =~ s/^\s+//;
