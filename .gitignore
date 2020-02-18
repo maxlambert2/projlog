@@ -1,6 +1,6 @@
 run.py
 flask/*
-config/
+config/local*
 virtualenv.py
 .*
 .medadata/*
