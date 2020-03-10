@@ -11,7 +11,7 @@ Flask-WTF==0.9.4
 Flask-WhooshAlchemy==0.54a
 Jinja2==2.7.1
 MarkupSafe==0.18
-Pillow==2.3.1
+Pillow==6.2.0
 SQLAlchemy==0.8.4
 South==0.8.1
 Tempita==0.5.3dev
