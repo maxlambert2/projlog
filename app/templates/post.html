@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+  {% from "_form_macro.html" import render_field %}
+      {% from "_display_pic_input.html" import render_pic_input %}
+
+{% block center_column %}
+       <form class="post_status full_page" action="/post" method="post" enctype=multipart/form-data  name="post_status" >
+    <fieldset>
+
+        {{form.hidden_tag()}} 
+<ul>
+  {{ render_field(form.project_id) }} 
+  {{ render_field(form.post_text) }} 
+
+</ul>
+<!--   <div class="inputWrapper" id="add_picture"> Add Picture
+       <input id="picture" name="picture" type="file" class="fileInput" onchange="readURL(this);" /> 
+     </div>
+
+  <input type="submit" value="Update Status" class="button"/>  <img id="preview_img" src="" /> -->
+
+{{ render_pic_input("", "Add Picture") }}
+
+<input type="submit" value="Submit Post" class="button"/> 
+
+ </fieldset>
+      </form>
+
+{% endblock %}

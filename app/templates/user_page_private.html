@@ -1,0 +1,43 @@
+{% extends "user_page_base.html" %}
+
+{% block page_center %}
+
+		{% if request_received %}
+
+		<table>
+		<tr>
+			<td>
+				{{ user.get_full_name() }}  sent you a Friend Request
+			</td>
+			<td>
+					<a  class="button accept" id="accept_{{user.id}}" onclick="approveFriendRequest(this.id, true, {{user.id}}, {{current_user.id}});"  >
+					Accept
+				</a>
+			</td>
+			<td>
+					<a class="button ignore"  id="ignore_{{user.id}}" onclick="approveFriendRequest(this.id, false, {{user.id}}, {{current_user.id}});" >
+					Ignore
+				</a>
+			</td>
+		</tr>
+	</table>
+
+		{% else  %}
+
+
+			This user's profile is private.  
+
+			{% if request_sent %}
+
+			Friend Request Sent
+
+			{% else %}
+
+
+			<a class="button add_friend" onclick="addFriend({{current_user.id}},{{user.id}});" id="addFriend{{user.id}}">Send Friend Request</a>
+
+			{% endif %}
+
+
+	{% endif %}
+{% endblock %}

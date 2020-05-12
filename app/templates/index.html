@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% from "_form_macro.html" import render_field %}
+
+{% block content %}
+
+<div id="main" class="index">
+
+  <div id="leftcolumn" >
+    <ul class="leftbar">
+      <li>
+  	<a href="/create_project" id="create_project">Create New Project</a>
+  		</li>
+  			<li>
+  				<a  href="/my_friends"> My Friends </a>
+  			</li>
+  			<li>
+          <ul class="my_projects">
+  				My Projects
+  	
+  			{% for project in current_user.projects %}
+  			   <li class="project_list">
+            <a href="{{project.get_url()}}"> {{project.project_name}} </a>
+  			   </li>
+  			{% endfor %}
+      </ul>
+    </li>
+</ul>
+  </div>
+
+  <div id="centercolumn">
+
+  {% block center_column %}
+
+  {% endblock %}
+
+  </div>
+
+
+  <div id="rightcolumn">
+
+  </div>
+
+</div>
+
+{% endblock %}

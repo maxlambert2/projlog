@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_form_macro.html" import render_field %}
+ {% from "_display_pic_input.html" import render_pic_input %}
+
+
+{% block content %}
+
+
+{% block form_start %}
+    <form class="project full_page" action="/create_project" method="post" name="create_project" >
+       <fieldset>
+    <legend > Create Project </legend>
+{% endblock %}
+
+  {{form.hidden_tag()}}
+
+  <div id="leftcolumn" class="two_col_layout">
+	<ul>
+{{render_field(form.project_name)}}
+<!-- <li>
+  <label for="goal">Project Goal</label>
+ <input id="goal" name="goal" type="text" value="" tabindex="2" size="60"/>
+   {% if form.goal.errors %}
+    <ul class='errors'>
+    {% for error in form.goal.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+</li> -->
+ {{ render_field(form.category) }}
+
+  {{ render_field(form.privacy) }}
+
+	{{ render_field(form.goal) }}
+  {{ render_field(form.comments )}}
+
+<!-- <li>
+  <label for="comments">Comments</label>
+ <input id="comments" name="comments" type="textarea" value="" tabindex="4" size="60" height=3 />
+    {% if form.comments.errors %}
+    <ul class='errors'>
+    {% for error in form.comments.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+</li> -->
+  </ul>
+</div>
+<div id="rightcolumn" class="two_col_layout">
+  {% block additional_fields %}
+{{ render_pic_input("", "Add Project Picture (optional) ") }}
+{% endblock %}
+</div>
+ </fieldset>
+   <div class="submit_cancel_buttons">
+    {% block form_submit %}
+  <input type="submit" value="Create Project" class="button" />
+  {% endblock %}
+  <a class="cancel_button" href="/">Cancel</a>
+</div>
+  </form>
+   
+  
+{% endblock %}

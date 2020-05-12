@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<div id="main">
+
+		<div id="profile_summary">
+			{% block profile_summary %}
+			<img id="profile_pic" src="{{user.get_profile_pic_medium_url()}}" />
+			<div id="user_profile_name">{{ user.get_full_name() }}</div>
+			{% endblock %}
+		</div>
+
+	<div id="profile_center">
+
+		{% block page_center %}
+
+		{% endblock %}
+
+</div>
+</div>
+
+
+{% endblock content %}

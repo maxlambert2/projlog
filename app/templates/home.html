@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+  {% from "_form_macro.html" import render_field %}
+{% block content %}
+
+<div id="main">
+  <div id="leftcolumn" class="landingpage">
+    <div id="projlog_purpose">
+
+    <p>Spending too much time on Facebook or Reddit and not enough time pursuing your goals?</p>
+  <ul> 
+  <li> Start a project, share your progress and ideas with a select group of friends. </li>
+  <li> See what your close friends are working on and support them in reaching their goals. </li>
+    <li> Explore projects you find interesting. </li>
+</ul>
+</div>
+</div>
+
+  <div id="rightcolumn">
+
+
+  <form action="/login" method="post" name="login" class="login">
+  {{login_form.hidden_tag()}}
+<fieldset>
+    <legend > Log In </legend>
+    
+  <div class="error_msg">
+    {{ error_msg }}
+  </div>
+  <ul>
+   {{ render_field(login_form.email) }}
+  {{ render_field(login_form.password) }}
+  {{ render_field(login_form.remember_me) }}
+  </ul>
+  <input type="submit" value="Log In" class="button frontpage" />
+    </fieldset>
+  </form>
+
+    <form action="/signup" method="post" name="signup" class="signup">
+  {{signup_form.hidden_tag()}}
+     <fieldset>
+    <legend class="signup"> New to Projlog? Signup </legend>
+	<div class="error_msg">
+		{{ error_msg }}
+	</div>
+	<ul>
+   {{ render_field(signup_form.first_name) }}
+   {{ render_field(signup_form.email) }}
+	{{ render_field(signup_form.password) }}
+	{{ render_field(signup_form.confirm) }}
+	</ul>
+  <input id="signup_button" type="submit" value="Sign Up" class="button" />
+ </fieldset>
+  </form>
+
+  </div>
+</div>
+
+
+
+{% endblock content %}

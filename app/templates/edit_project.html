@@ -1,0 +1,16 @@
+{% extends "create_project.html" %}
+    {% from "_display_pic_input.html" import render_pic_input %}
+
+{% block form_start %}
+    <form class="project full_page" action="" method="post" enctype=multipart/form-data  name="edit_project" >
+    	       <fieldset>
+    <legend > Edit Project </legend>
+{% endblock %}
+
+  {% block additional_fields %}
+{{ render_pic_input(project.get_pic_url(size="medium"), "Change Project Picture") }}
+{% endblock %}
+
+    {% block form_submit %}
+  <input type="submit" value="Save" class="button" />
+  {% endblock %}

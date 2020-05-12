@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <div id="signup">
+  New to Projlog? <b>Signup</b>
+  </div>
+    {% from "_form_macro.html" import render_field %}
+    <form action="/signup" method="post" name="signup">
+  {{signup_form.hidden_tag()}}
+  <dl>
+    {{ render_field(form.profile_pic}}
+        {{ render_field(form.username }}
+   {{ render_field(form.first_name }}
+  {{ render_field(form.last_name }}
+	{{ render_field(form.location) }}
+  </dl>
+  <p><input type="submit" value="Save" />
+  {% if status == 'first' %}
+ <a class="cancel_button" href="url_for(create_project)" >Skip</a>
+ {% else %}
+<a class="cancel_button" href="{{previous_page}}">Cancel</a>
+{% endif %}
+</p>
+
+  </form>
+  
+{% endblock %}
